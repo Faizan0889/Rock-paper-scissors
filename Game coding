@@ -1,113 +1,220 @@
-Here are game coding which we use it to maker make sure to rate it copy it and edit it dont just copy and publish this code on GitHub!
+import socket
+import threading
 import random
 import time
+import json # Using JSON for more robust communication
 
-def get_computer_choice():
-    """
-    Randomly selects 'rock', 'paper', or 'scissors' for the computer.
-    Each choice has approximately a 33.33% chance.
-    """
-    choices = ['rock', 'paper', 'scissors']
-    return random.choice(choices)
+HOST = '0.0.0.0'  # Listen on all available network interfaces
+PORT = 12345      # You can change this port, but ensure it's forwarded on your router
 
-def determine_winner(player_choice, computer_choice):
-    """
-    Determines the winner of a single round based on Rock Paper Scissors rules.
-    Returns 'player', 'computer', or 'tie'.
-    """
-    if player_choice == computer_choice:
+# Game state
+player_connections = []
+player_names = {}
+player_choices = {}
+player_lives = {}
+game_in_progress = False
+game_lock = threading.Lock() # To prevent race conditions when updating game state
+
+def send_to_all_players(message_type, data=None):
+    """Sends a JSON message to all connected players."""
+    message = {"type": message_type, "data": data}
+    json_message = json.dumps(message) + "\n" # Add newline as delimiter
+    for conn in player_connections:
+        try:
+            conn.sendall(json_message.encode('utf-8'))
+        except socket.error as e:
+            print(f"Error sending to player: {e}")
+            # Handle disconnected player if necessary
+
+def get_game_state_message():
+    """Returns the current game state for players."""
+    return {
+        "player1_name": player_names.get(player_connections[0], "Player 1") if player_connections else "Player 1",
+        "player2_name": player_names.get(player_connections[1], "Player 2") if len(player_connections) > 1 else "Player 2",
+        "player1_lives": player_lives.get(player_connections[0], 0) if player_connections else 0,
+        "player2_lives": player_lives.get(player_connections[1], 0) if len(player_connections) > 1 else 0
+    }
+
+def determine_winner(choice1, choice2):
+    """Determines the winner of a single round."""
+    if choice1 == choice2:
         return 'tie'
-    elif (player_choice == 'rock' and computer_choice == 'scissors') or \
-         (player_choice == 'paper' and computer_choice == 'rock') or \
-         (player_choice == 'scissors' and computer_choice == 'paper'):
-        return 'player'
+    elif (choice1 == 'rock' and choice2 == 'scissors') or \
+         (choice1 == 'paper' and choice2 == 'rock') or \
+         (choice1 == 'scissors' and choice2 == 'paper'):
+        return 'player1'
     else:
-        return 'computer'
+        return 'player2'
 
-def display_instructions():
-    """
-    Prints the game instructions for the player.
-    """
-    print("\n--- Game Instructions ---")
-    print("Welcome to Rock Paper Scissors!")
-    print("You'll be playing against the computer.")
-    print("Both you and the computer start with 5 lives.")
-    print("Rules for winning a round:")
-    print("  - Rock crushes Scissors (Rock wins)")
-    print("  - Paper covers Rock (Paper wins)")
-    print("  - Scissors cuts Paper (Scissors wins)")
-    print("If you choose the same as the computer, it's a tie, and no lives are lost.")
-    print("If you win a round, the computer loses 1 life.")
-    print("If the computer wins a round, you lose 1 life.")
-    print("The game ends when either you or the computer runs out of lives.")
-    print("To make a choice, type 'rock', 'paper', or 'scissors'.")
-    print("You can type 'instructions' at any time to see these rules again.")
-    print("Good luck!")
-    print("-------------------------\n")
+def handle_player_client(conn, addr, player_id):
+    global game_in_progress
 
+    print(f"[{player_id}] Connected by {addr}")
+    player_names[conn] = player_id # Store connection to name mapping
+    player_lives[conn] = 5
 
-def play_game():
-    """
-    Main function to run the Rock Paper Scissors game.
-    """
-    player_lives = 5
-    computer_lives = 5
-
-    print("Welcome to Rock Paper Scissors!")
-    print(f"You and the computer each start with {player_lives} lives.")
-    print("The game ends when one player runs out of lives.")
-    print("Type 'instructions' at any time for help.")
-    print("--------------------------------------------------")
-
-    while player_lives > 0 and computer_lives > 0:
-        print(f"\n--- Current Lives ---")
-        print(f"Your Lives: {player_lives}")
-        print(f"Computer Lives: {computer_lives}")
-
-        player_choice = input("Choose rock, paper, or scissors (or type 'instructions'): ").lower()
-
-        # Check for instructions command
-        if player_choice == 'instructions':
-            display_instructions()
-            continue # Skip the rest of this loop iteration and ask for choice again
-
-        # Input validation for game choices
-        while player_choice not in ['rock', 'paper', 'scissors']:
-            print("Invalid choice. Please choose 'rock', 'paper', or 'scissors' (or type 'instructions').")
-            player_choice = input("Choose rock, paper, or scissors (or type 'instructions'): ").lower()
-            if player_choice == 'instructions': # Allow instructions after an invalid choice too
-                display_instructions()
-                # If they just asked for instructions, don't immediately ask for a game choice
-                # The outer loop will re-prompt them.
-                continue
-
-
-        computer_choice = get_computer_choice()
-
-        print(f"You chose: {player_choice}")
-        print(f"Computer chose: {computer_choice}")
-
-        winner = determine_winner(player_choice, computer_choice)
-
-        if winner == 'player':
-            computer_lives -= 1
-            print("You win this round!")
-        elif winner == 'computer':
-            player_lives -= 1
-            print("Computer wins this round!")
+    try:
+        # Initial greeting and wait for opponent
+        if len(player_connections) < 2:
+            conn.sendall(json.dumps({"type": "MESSAGE", "data": "Waiting for opponent to connect..."}).encode('utf-8') + b"\n")
         else:
-            print("It's a tie this round!")
+            conn.sendall(json.dumps({"type": "MESSAGE", "data": "Both players connected! Game starting soon."}).encode('utf-8') + b"\n")
+            with game_lock:
+                if not game_in_progress:
+                    game_in_progress = True
+                    print("Both players connected. Starting game...")
+                    # Send initial game state to both players
+                    send_to_all_players("GAME_STATE_UPDATE", get_game_state_message())
 
-        print("--------------------------------------------------")
+        while True:
+            data = conn.recv(1024).decode('utf-8').strip()
+            if not data:
+                break # Client disconnected
 
-    print("\n--- Game Over ---")
-    if player_lives == 0:
-        print("Computer won the game!")
-    else:
-        print("You won the game!")
+            try:
+                message = json.loads(data)
+                msg_type = message.get("type")
+                msg_data = message.get("data")
 
-    print("\nGame will close in 10 seconds...")
-    time.sleep(10)
+                if msg_type == "CHOICE":
+                    player_choices[conn] = msg_data
+                    print(f"[{player_id}] received choice: {msg_data}")
+
+                    # Check if both players have made a choice
+                    with game_lock: # Lock for critical section
+                        if len(player_choices) == 2 and all(p in player_choices for p in player_connections):
+                            p1_conn = player_connections[0]
+                            p2_conn = player_connections[1]
+                            p1_choice = player_choices.get(p1_conn)
+                            p2_choice = player_choices.get(p2_conn)
+
+                            if p1_choice and p2_choice:
+                                winner = determine_winner(p1_choice, p2_choice)
+                                round_result = ""
+                                if winner == 'player1':
+                                    player_lives[p2_conn] -= 1
+                                    round_result = f"{player_names[p1_conn]} wins this round!"
+                                elif winner == 'player2':
+                                    player_lives[p1_conn] -= 1
+                                    round_result = f"{player_names[p2_conn]} wins this round!"
+                                else:
+                                    round_result = "It's a tie this round!"
+
+                                send_to_all_players("ROUND_RESULT", {
+                                    "p1_choice": p1_choice,
+                                    "p2_choice": p2_choice,
+                                    "winner": winner,
+                                    "message": round_result,
+                                    "current_state": get_game_state_message()
+                                })
+                                print(f"Round result: {round_result}")
+
+                                # Clear choices for the next round
+                                player_choices.clear()
+
+                                # Check for game over
+                                if player_lives[p1_conn] <= 0 or player_lives[p2_conn] <= 0:
+                                    final_winner = ""
+                                    if player_lives[p1_conn] <= 0:
+                                        final_winner = player_names[p2_conn]
+                                    else:
+                                        final_winner = player_names[p1_conn]
+                                    send_to_all_players("GAME_OVER", {"winner": final_winner})
+                                    print(f"Game Over! Winner: {final_winner}")
+                                    game_in_progress = False # Reset game state for potential new game
+
+                                    # Close connections gracefully after game over
+                                    for conn_to_close in player_connections:
+                                        conn_to_close.close()
+                                    player_connections.clear() # Clear list
+                                    player_names.clear()
+                                    player_lives.clear()
+                                    # Server will wait for new players
+                                    break # Exit thread loop
+                                else:
+                                    # Send updated lives after a short delay for readability
+                                    time.sleep(1) # Small pause
+                                    send_to_all_players("GAME_STATE_UPDATE", get_game_state_message())
+                                    send_to_all_players("MESSAGE", "Enter your choice for the next round!")
+
+                            else:
+                                print(f"Warning: Missing choice from {p1_conn} or {p2_conn} after both made choices logic initiated.")
+                        else:
+                            # Notify the current player that they are waiting for opponent
+                            conn.sendall(json.dumps({"type": "MESSAGE", "data": "Waiting for opponent to make a choice..."}).encode('utf-8') + b"\n")
+
+
+                elif msg_type == "INSTRUCTIONS":
+                    instructions_text = """
+--- Game Instructions (Online Multiplayer) ---
+Welcome to Rock Paper Scissors - Two Player Online!
+You will be playing against another human player over the internet.
+Both players start with 5 lives.
+
+Rules for winning a round:
+  - Rock crushes Scissors (Rock wins)
+  - Paper covers Rock (Paper wins)
+  - Scissors cuts Paper (Scissors wins)
+If both players choose the same, it's a tie, and no lives are lost.
+The player who wins a round causes the other player to lose 1 life.
+The game ends when either player runs out of lives.
+
+How to play a round:
+  1. When prompted, type 'rock', 'paper', or 'scissors'.
+  2. Your choice will be sent to the server and held secretly.
+  3. The server will wait for your opponent's choice.
+  4. Once both choices are received, the server will reveal them and the round winner.
+  5. Lives will be updated, and the next round begins!
+Type 'instructions' at any time to see these rules again.
+---------------------------------------
+                    """
+                    conn.sendall(json.dumps({"type": "INSTRUCTIONS_RESPONSE", "data": instructions_text}).encode('utf-8') + b"\n")
+                else:
+                    print(f"[{player_id}] Unknown message type: {msg_type}")
+
+            except json.JSONDecodeError:
+                print(f"[{player_id}] Received malformed JSON: {data}")
+            except Exception as e:
+                print(f"[{player_id}] Error processing message: {e}")
+
+    except ConnectionResetError:
+        print(f"[{player_id}] Client disconnected unexpectedly.")
+    finally:
+        print(f"[{player_id}] Disconnected.")
+        with game_lock:
+            if conn in player_connections:
+                player_connections.remove(conn)
+                # If a player disconnects mid-game, end the game
+                if game_in_progress and len(player_connections) < 2:
+                    print("One player disconnected. Game ended.")
+                    send_to_all_players("GAME_OVER", {"winner": "Opponent Disconnected"})
+                    game_in_progress = False
+                    player_choices.clear()
+                    player_lives.clear()
+                    player_names.clear() # Clear names for next game
+                    for remaining_conn in player_connections:
+                        remaining_conn.close() # Close any remaining connection
+                    player_connections.clear() # Clear list again
+
+
+def start_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Allows immediate reuse of address
+    server_socket.bind((HOST, PORT))
+    server_socket.listen(2) # Listen for up to 2 connections
+    print(f"Server listening on {HOST}:{PORT}")
+    print("Waiting for two players to connect...")
+
+    while True:
+        if len(player_connections) < 2:
+            conn, addr = server_socket.accept()
+            player_connections.append(conn)
+            player_id = f"Player {len(player_connections)}"
+            threading.Thread(target=handle_player_client, args=(conn, addr, player_id)).start()
+        else:
+            # If two players are already connected, wait for current game to finish or for disconnects
+            # This 'else' block ensures the server doesn't accept a 3rd connection for this 2-player game
+            time.sleep(1) # Small pause to avoid busy-waiting
 
 if __name__ == "__main__":
-    play_game()
+    start_server()
