@@ -1,0 +1,113 @@
+Here are game coding which we use it to maker make sure to rate it copy it and edit it dont just copy and publish this code on GitHub!
+import random
+import time
+
+def get_computer_choice():
+    """
+    Randomly selects 'rock', 'paper', or 'scissors' for the computer.
+    Each choice has approximately a 33.33% chance.
+    """
+    choices = ['rock', 'paper', 'scissors']
+    return random.choice(choices)
+
+def determine_winner(player_choice, computer_choice):
+    """
+    Determines the winner of a single round based on Rock Paper Scissors rules.
+    Returns 'player', 'computer', or 'tie'.
+    """
+    if player_choice == computer_choice:
+        return 'tie'
+    elif (player_choice == 'rock' and computer_choice == 'scissors') or \
+         (player_choice == 'paper' and computer_choice == 'rock') or \
+         (player_choice == 'scissors' and computer_choice == 'paper'):
+        return 'player'
+    else:
+        return 'computer'
+
+def display_instructions():
+    """
+    Prints the game instructions for the player.
+    """
+    print("\n--- Game Instructions ---")
+    print("Welcome to Rock Paper Scissors!")
+    print("You'll be playing against the computer.")
+    print("Both you and the computer start with 5 lives.")
+    print("Rules for winning a round:")
+    print("  - Rock crushes Scissors (Rock wins)")
+    print("  - Paper covers Rock (Paper wins)")
+    print("  - Scissors cuts Paper (Scissors wins)")
+    print("If you choose the same as the computer, it's a tie, and no lives are lost.")
+    print("If you win a round, the computer loses 1 life.")
+    print("If the computer wins a round, you lose 1 life.")
+    print("The game ends when either you or the computer runs out of lives.")
+    print("To make a choice, type 'rock', 'paper', or 'scissors'.")
+    print("You can type 'instructions' at any time to see these rules again.")
+    print("Good luck!")
+    print("-------------------------\n")
+
+
+def play_game():
+    """
+    Main function to run the Rock Paper Scissors game.
+    """
+    player_lives = 5
+    computer_lives = 5
+
+    print("Welcome to Rock Paper Scissors!")
+    print(f"You and the computer each start with {player_lives} lives.")
+    print("The game ends when one player runs out of lives.")
+    print("Type 'instructions' at any time for help.")
+    print("--------------------------------------------------")
+
+    while player_lives > 0 and computer_lives > 0:
+        print(f"\n--- Current Lives ---")
+        print(f"Your Lives: {player_lives}")
+        print(f"Computer Lives: {computer_lives}")
+
+        player_choice = input("Choose rock, paper, or scissors (or type 'instructions'): ").lower()
+
+        # Check for instructions command
+        if player_choice == 'instructions':
+            display_instructions()
+            continue # Skip the rest of this loop iteration and ask for choice again
+
+        # Input validation for game choices
+        while player_choice not in ['rock', 'paper', 'scissors']:
+            print("Invalid choice. Please choose 'rock', 'paper', or 'scissors' (or type 'instructions').")
+            player_choice = input("Choose rock, paper, or scissors (or type 'instructions'): ").lower()
+            if player_choice == 'instructions': # Allow instructions after an invalid choice too
+                display_instructions()
+                # If they just asked for instructions, don't immediately ask for a game choice
+                # The outer loop will re-prompt them.
+                continue
+
+
+        computer_choice = get_computer_choice()
+
+        print(f"You chose: {player_choice}")
+        print(f"Computer chose: {computer_choice}")
+
+        winner = determine_winner(player_choice, computer_choice)
+
+        if winner == 'player':
+            computer_lives -= 1
+            print("You win this round!")
+        elif winner == 'computer':
+            player_lives -= 1
+            print("Computer wins this round!")
+        else:
+            print("It's a tie this round!")
+
+        print("--------------------------------------------------")
+
+    print("\n--- Game Over ---")
+    if player_lives == 0:
+        print("Computer won the game!")
+    else:
+        print("You won the game!")
+
+    print("\nGame will close in 10 seconds...")
+    time.sleep(10)
+
+if __name__ == "__main__":
+    play_game()
