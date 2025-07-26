@@ -1,112 +1,804 @@
-import random
-import time
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the game */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem; /* Increased padding */
+            width: 100%;
+            max-width: 800px; /* Increased from 600px */
+            min-height: 600px; /* Ensure a minimum height */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative; /* For modal positioning */
+            overflow: hidden; /* Ensure stars don't overflow rounded corners */
+        }
+        .choice-button {
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid transparent;
+            font-weight: 600;
+            color: #374151; /* Darker text */
+        }
+        .choice-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .choice-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .choice-button.rock { background-color: #fecaca; } /* Red-100 */
+        .choice-button.paper { background-color: #bfdbfe; } /* Blue-100 */
+        .choice-button.scissors { background-color: #d1fae5; } /* Green-100 */
 
-def get_computer_choice():
-    """
-    Randomly selects 'rock', 'paper', or 'scissors' for the computer.
-    Each choice has approximately a 33.33% chance.
-    """
-    choices = ['rock', 'paper', 'scissors']
-    return random.choice(choices)
+        .choice-button .icon {
+            font-size: 3rem; /* Larger icons */
+            margin-bottom: 0.5rem;
+        }
 
-def determine_winner(player_choice, computer_choice):
-    """
-    Determines the winner of a single round based on Rock Paper Scissors rules.
-    Returns 'player', 'computer', or 'tie'.
-    """
-    if player_choice == computer_choice:
-        return 'tie'
-    elif (player_choice == 'rock' and computer_choice == 'scissors') or \
-         (player_choice == 'paper' and computer_choice == 'rock') or \
-         (player_choice == 'scissors' and computer_choice == 'paper'):
-        return 'player'
-    else:
-        return 'computer'
-
-def display_instructions():
-    """
-    Prints the game instructions for the player.
-    """
-    print("\n--- Game Instructions ---")
-    print("Welcome to Rock Paper Scissors!")
-    print("You'll be playing against the computer.")
-    print("Both you and the computer start with 5 lives.")
-    print("Rules for winning a round:")
-    print("  - Rock crushes Scissors (Rock wins)")
-    print("  - Paper covers Rock (Paper wins)")
-    print("  - Scissors cuts Paper (Scissors wins)")
-    print("If you choose the same as the computer, it's a tie, and no lives are lost.")
-    print("If you win a round, the computer loses 1 life.")
-    print("If the computer wins a round, you lose 1 life.")
-    print("The game ends when either you or the computer runs out of lives.")
-    print("To make a choice, type 'rock', 'paper', or 'scissors'.")
-    print("You can type 'instructions' at any time to see these rules again.")
-    print("Good luck!")
-    print("-------------------------\n")
+        .action-button {
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .reset-button {
+            background-color: #ef4444; /* Red-500 */
+            color: white;
+        }
+        .reset-button:hover {
+            background-color: #dc2626; /* Red-600 */
+        }
+        .shop-button {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+        }
+        .shop-button:hover {
+            background-color: #2563eb; /* Blue-600 */
+        }
 
 
-def play_game():
-    """
-    Main function to run the Rock Paper Scissors game.
-    """
-    player_lives = 5
-    computer_lives = 5
+        /* Modal Styles */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            border-radius: 1.5rem; /* Match container border radius */
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            max-width: 90%; /* Ensure modal is responsive */
+            min-width: 300px; /* Minimum width for readability */
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .instructions-content {
+            text-align: left;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            color: #4b5563;
+        }
+        .instructions-content ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .instructions-content li {
+            margin-bottom: 0.5rem;
+        }
 
-    print("Welcome to Rock Paper Scissors!")
-    print(f"You and the computer each start with {player_lives} lives.")
-    print("The game ends when one player runs out of lives.")
-    print("Type 'instructions' at any time for help.")
-    print("--------------------------------------------------")
+        /* Start Screen Specific Styles */
+        #startScreen {
+            background: linear-gradient(to bottom right, #1e3a8a, #172554); /* Deep blue gradient */
+            color: white;
+            position: absolute; /* Position absolutely within game-container */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10; /* Ensure it's above game screen */
+            border-radius: 1.5rem; /* Match game-container border radius */
+            /* Ensure start screen fills its parent */
+            display: flex; /* Ensure it's flex by default for layout */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem; /* Match game-container padding */
+            box-sizing: border-box; /* Include padding in width/height */
+        }
 
-    while player_lives > 0 and computer_lives > 0:
-        print(f"\n--- Current Lives ---")
-        print(f"Your Lives: {player_lives}")
-        print(f"Computer Lives: {computer_lives}")
+        /* Starry background effect for start screen */
+        #startScreen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 80px 100px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 150px 120px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 200px 50px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 250px 180px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 300px 20px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 350px 150px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 400px 80px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 450px 200px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 500px 70px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 550px 130px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 60px 220px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 120px 250px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 180px 280px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 240px 300px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 300px 320px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 360px 340px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 420px 360px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 480px 380px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 540px 400px, #eee, rgba(0,0,0,0));
+            background-size: 600px 400px; /* Adjust as needed for star density */
+            animation: twinkle 10s infinite alternate; /* Twinkling animation */
+        }
 
-        player_choice = input("Choose rock, paper, or scissors (or type 'instructions'): ").lower()
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
 
-        # Check for instructions command
-        if player_choice == 'instructions':
-            display_instructions()
-            continue # Skip the rest of this loop iteration and ask for choice again
+        #startScreen h1, #startScreen button {
+            z-index: 20; /* Ensure text and buttons are above stars */
+            position: relative;
+        }
 
-        # Input validation for game choices
-        while player_choice not in ['rock', 'paper', 'scissors']:
-            print("Invalid choice. Please choose 'rock', 'paper', or 'scissors' (or type 'instructions').")
-            player_choice = input("Choose rock, paper, or scissors (or type 'instructions'): ").lower()
-            if player_choice == 'instructions': # Allow instructions after an invalid choice too
-                display_instructions()
-                # If they just asked for instructions, don't immediately ask for a game choice
-                # The outer loop will re-prompt them.
-                continue
+        /* Ensure game screen fills its parent when visible */
+        #gameScreen {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box; /* Include padding in width/height */
+            display: flex; /* Always flex, visibility controlled by JS */
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Start Screen -->
+        <div id="startScreen" class="flex flex-col items-center justify-center h-full w-full">
+            <h1 class="text-5xl font-extrabold text-white mb-8">RPS Game</h1>
+            <button id="startGameBtn" class="bg-blue-400 text-white py-4 px-10 rounded-xl font-bold text-2xl shadow-lg hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-opacity-75 mb-6">
+                Start Game
+            </button>
+            <button id="instructionsBtn" class="bg-gray-700 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mb-4">
+                Instructions
+            </button>
+            <button id="shopBtnStartScreen" class="bg-yellow-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75">
+                Coin Shop
+            </button>
+        </div>
+
+        <!-- Main Game Screen (initially hidden) -->
+        <div id="gameScreen" class="flex-col items-center justify-center" style="display: none;">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Rock Paper Scissors</h1>
+
+            <div class="flex justify-around items-center text-center text-gray-700 font-semibold text-lg mb-6 w-full">
+                <div class="player-score">
+                    <p>Player Wins</p>
+                    <p id="playerScore" class="text-5xl font-bold text-blue-600">0</p>
+                </div>
+                <div class="computer-score">
+                    <p>Computer Wins</p>
+                    <p id="computerScore" class="text-5xl font-bold text-red-600">0</p>
+                </div>
+            </div>
+
+            <div class="flex justify-around items-center text-center text-gray-700 font-semibold text-lg mb-6 w-full">
+                <div class="player-lives">
+                    <p>Lives</p>
+                    <p id="playerLives" class="text-4xl font-bold text-purple-600">10</p>
+                </div>
+                <div class="player-coins">
+                    <p>Coins</p>
+                    <p id="playerCoins" class="text-4xl font-bold text-yellow-600">100</p>
+                </div>
+            </div>
+
+            <!-- New: XP and Rank Display -->
+            <div class="flex justify-around items-center text-center text-gray-700 font-semibold text-lg mb-6 w-full">
+                <div class="player-xp">
+                    <p>XP</p>
+                    <p id="playerXP" class="text-4xl font-bold text-indigo-600">0</p>
+                </div>
+                <div class="player-rank">
+                    <p>Rank</p>
+                    <p id="playerRank" class="text-4xl font-bold text-green-600">Bronze</p>
+                </div>
+            </div>
 
 
-        computer_choice = get_computer_choice()
+            <div id="resultDisplay" class="text-3xl font-bold text-gray-900 mb-6 min-h-[40px] flex items-center justify-center">
+                Choose your move!
+            </div>
 
-        print(f"You chose: {player_choice}")
-        print(f"Computer chose: {computer_choice}")
+            <div class="flex justify-center gap-4 mb-8 flex-wrap w-full">
+                <button id="rockBtn" class="choice-button rock flex-1 min-w-[120px] max-w-[180px]">
+                    <span class="icon">✊</span>
+                    Rock
+                </button>
+                <button id="paperBtn" class="choice-button paper flex-1 min-w-[120px] max-w-[180px]">
+                    <span class="icon">✋</span>
+                    Paper
+                </button>
+                <button id="scissorsBtn" class="choice-button scissors flex-1 min-w-[120px] max-w-[180px]">
+                    <span class="icon">✌️</span>
+                    Scissors
+                </button>
+            </div>
 
-        winner = determine_winner(player_choice, computer_choice)
+            <div class="text-lg text-gray-600 mb-4">
+                <p>Your Choice: <span id="playerChoice" class="font-bold text-blue-700"></span></p>
+                <p>Computer Choice: <span id="computerChoice" class="font-bold text-red-700"></span></p>
+            </div>
 
-        if winner == 'player':
-            computer_lives -= 1
-            print("You win this round!")
-        elif winner == 'computer':
-            player_lives -= 1
-            print("Computer wins this round!")
-        else:
-            print("It's a tie this round!")
+            <div class="flex justify-center gap-4 w-full">
+                <button id="resetBtn" class="action-button reset-button flex-1">
+                    Reset Game
+                </button>
+                <button id="shopBtnGameScreen" class="action-button shop-button flex-1">
+                    Shop
+                </button>
+            </div>
+        </div>
 
-        print("--------------------------------------------------")
+        <!-- Game Over/Win Modal -->
+        <div id="gameMessageModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 id="modalMessage" class="text-4xl font-extrabold mb-6"></h2>
+                <button id="playAgainBtn" class="bg-blue-600 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+                    Play Again
+                </button>
+            </div>
+        </div>
 
-    print("\n--- Game Over ---")
-    if player_lives == 0:
-        print("Computer won the game!")
-    else:
-        print("You won the game!")
+        <!-- Instructions Modal -->
+        <div id="instructionsModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">How to Play</h2>
+                <div class="instructions-content">
+                    <ul>
+                        <li>Choose Rock, Paper, or Scissors to play a round against the computer.</li>
+                        <li>Each round costs <span class="font-bold text-yellow-600">10 coins</span>.</li>
+                        <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-green-600">+10 coins</span> and <span class="font-bold text-indigo-600">+100 XP</span>.</li>
+                        <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">10 coins</span> and <span class="font-bold text-red-600">1 life</span>.</li>
+                        <li>If it's a <span class="font-bold text-gray-900">draw</span>, no coins, lives, or XP are affected.</li>
+                        <li>You start with <span class="font-bold text-purple-600">10 lives</span>.</li>
+                        <li>You gain <span class="font-bold text-purple-600">1 life every 10 minutes</span> (up to 10 lives).</li>
+                        <li>The game ends if your lives drop to <span class="font-bold text-red-600">0</span> (You Lose!).</li>
+                        <li>Win the game by achieving <span class="font-bold text-blue-600">10 player wins</span>!</li>
+                        <li>Visit the <span class="font-bold text-blue-600">Coin Shop</span> to buy lives and ranks.</li>
+                    </ul>
+                    <h3 class="text-xl font-bold mt-4">Ranks:</h3>
+                    <ul>
+                        <li><span class="font-bold text-green-600">Bronze:</span> 0 - 499 XP</li>
+                        <li><span class="font-bold text-gray-600">Silver:</span> 500 - 999 XP</li>
+                        <li><span class="font-bold text-yellow-600">Gold:</span> 1000 - 1499 XP</li>
+                        <li><span class="font-bold text-purple-600">Hero:</span> 1500+ XP</li>
+                    </ul>
+                </div>
+                <button id="closeInstructionsBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Got It!
+                </button>
+            </div>
+        </div>
 
-    print("\nGame will close in 10 seconds...")
-    time.sleep(10)
+        <!-- Shop Modal -->
+        <div id="shopModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">Coin Shop</h2>
+                <p class="text-xl text-gray-700 mb-6">Your Coins: <span id="shopCoinsDisplay" class="font-bold text-yellow-600"></span></p>
+                <div class="flex flex-col gap-4">
+                    <button id="buyLifeBtn" class="bg-green-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+                        Buy 1 Life (50 Coins)
+                    </button>
+                    <button id="buyHeroRankBtn" class="bg-purple-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75">
+                        Buy Hero Rank (200 Coins)
+                    </button>
+                    <p id="shopMessage" class="text-red-500 text-sm mt-2 min-h-[20px]"></p>
+                </div>
+                <button id="closeShopBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Close Shop
+                </button>
+            </div>
+        </div>
+    </div>
 
-if __name__ == "__main__":
-    play_game()
+    <script>
+        // Get DOM elements
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const instructionsBtn = document.getElementById('instructionsBtn');
+        const shopBtnStartScreen = document.getElementById('shopBtnStartScreen');
+        const instructionsModal = document.getElementById('instructionsModal');
+        const closeInstructionsBtn = document.getElementById('closeInstructionsBtn');
+
+        const rockBtn = document.getElementById('rockBtn');
+        const paperBtn = document.getElementById('paperBtn');
+        const scissorsBtn = document.getElementById('scissorsBtn');
+        const playerScoreDisplay = document.getElementById('playerScore');
+        const computerScoreDisplay = document.getElementById('computerScore');
+        const playerLivesDisplay = document.getElementById('playerLives');
+        const playerCoinsDisplay = document.getElementById('playerCoins');
+        const playerXPDisplay = document.getElementById('playerXP');
+        const playerRankDisplay = document.getElementById('playerRank');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const playerChoiceDisplay = document.getElementById('playerChoice');
+        const computerChoiceDisplay = document.getElementById('computerChoice');
+        const resetBtn = document.getElementById('resetBtn');
+        const shopBtnGameScreen = document.getElementById('shopBtnGameScreen');
+        const gameMessageModal = document.getElementById('gameMessageModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const shopModal = document.getElementById('shopModal');
+        const shopCoinsDisplay = document.getElementById('shopCoinsDisplay');
+        const buyLifeBtn = document.getElementById('buyLifeBtn');
+        const buyHeroRankBtn = document.getElementById('buyHeroRankBtn');
+        const shopMessage = document.getElementById('shopMessage');
+        const closeShopBtn = document.getElementById('closeShopBtn');
+
+        // Game state variables
+        let playerScore = 0;
+        let computerScore = 0;
+        let playerLives = 10;
+        let playerCoins = 100;
+        let playerXP = 0;
+        let playerRank = 'Bronze';
+        let gameEnded = false;
+        let lifeRegenIntervalId;
+
+        // Game constants
+        const choices = ['rock', 'paper', 'scissors'];
+        const choiceIcons = {
+            'rock': '✊',
+            'paper': '✋',
+            'scissors': '✌️'
+        };
+        const ROUND_COST = 10;
+        const WIN_REWARD_COINS = 10;
+        const LOSE_PENALTY_COINS = 10;
+        const WIN_REWARD_XP = 100;
+        const LIFE_REGEN_TIME_MS = 10 * 60 * 1000;
+        const WIN_CONDITION_SCORE = 10;
+        const LIFE_COST = 50;
+        const HERO_RANK_COST = 200;
+
+        // Rank thresholds
+        const RANK_THRESHOLDS = {
+            'Bronze': 0,
+            'Silver': 500,
+            'Gold': 1000,
+            'Hero': 1500
+        };
+
+        /**
+         * Updates all game display elements (scores, lives, coins, XP, rank).
+         */
+        function updateDisplays() {
+            playerScoreDisplay.textContent = playerScore;
+            computerScoreDisplay.textContent = computerScore;
+            playerLivesDisplay.textContent = playerLives;
+            playerCoinsDisplay.textContent = playerCoins;
+            playerXPDisplay.textContent = playerXP;
+            playerRankDisplay.textContent = playerRank;
+            shopCoinsDisplay.textContent = playerCoins;
+        }
+
+        /**
+         * Determines the player's rank based on their XP.
+         */
+        function updateRank() {
+            if (playerXP >= RANK_THRESHOLDS['Hero']) {
+                playerRank = 'Hero';
+                playerRankDisplay.classList.remove('text-green-600', 'text-gray-600', 'text-yellow-600');
+                playerRankDisplay.classList.add('text-purple-600');
+            } else if (playerXP >= RANK_THRESHOLDS['Gold']) {
+                playerRank = 'Gold';
+                playerRankDisplay.classList.remove('text-green-600', 'text-gray-600', 'text-purple-600');
+                playerRankDisplay.classList.add('text-yellow-600');
+            } else if (playerXP >= RANK_THRESHOLDS['Silver']) {
+                playerRank = 'Silver';
+                playerRankDisplay.classList.remove('text-green-600', 'text-yellow-600', 'text-purple-600');
+                playerRankDisplay.classList.add('text-gray-600');
+            } else {
+                playerRank = 'Bronze';
+                playerRankDisplay.classList.remove('text-gray-600', 'text-yellow-600', 'text-purple-600');
+                playerRankDisplay.classList.add('text-green-600');
+            }
+            updateDisplays();
+        }
+
+        /**
+         * Generates a random choice for the computer.
+         * @returns {string} - The computer's choice ('rock', 'paper', or 'scissors').
+         */
+        function getComputerChoice() {
+            const randomIndex = Math.floor(Math.random() * choices.length);
+            return choices[randomIndex];
+        }
+
+        /**
+         * Determines the winner of the round.
+         * @param {string} playerSelection - The player's choice.
+         * @param {string} computerSelection - The computer's choice.
+         * @returns {string} - The result of the round ('win', 'lose', or 'draw').
+         */
+        function determineWinner(playerSelection, computerSelection) {
+            if (playerSelection === computerSelection) {
+                return 'draw';
+            } else if (
+                (playerSelection === 'rock' && computerSelection === 'scissors') ||
+                (playerSelection === 'paper' && computerSelection === 'rock') ||
+                (playerSelection === 'scissors' && computerSelection === 'paper')
+            ) {
+                return 'win';
+            } else {
+                return 'lose';
+            }
+        }
+
+        /**
+         * Disables or enables the game choice buttons.
+         * @param {boolean} disabled - True to disable, false to enable.
+         */
+        function disableGameButtons(disabled) {
+            rockBtn.disabled = disabled;
+            paperBtn.disabled = disabled;
+            scissorsBtn.disabled = disabled;
+            // Add/remove opacity for visual feedback
+            [rockBtn, paperBtn, scissorsBtn].forEach(btn => {
+                if (disabled) {
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        /**
+         * Shows a modal with a specific message.
+         * @param {HTMLElement} modalElement - The modal overlay element to show.
+         * @param {string} message - The message to display (for game message modal only).
+         * @param {string} type - 'win' or 'lose' to apply specific styling (for game message modal only).
+         */
+        function showModal(modalElement, message = '', type = '') {
+            if (modalElement === gameMessageModal) {
+                modalMessage.textContent = message;
+                if (type === 'win') {
+                    modalMessage.classList.add('text-green-600');
+                    modalMessage.classList.remove('text-red-600');
+                } else if (type === 'lose') {
+                    modalMessage.classList.add('text-red-600');
+                    modalMessage.classList.remove('text-green-600');
+                }
+            }
+            modalElement.classList.remove('hidden');
+            modalElement.classList.add('show'); // Trigger transition
+        }
+
+        /**
+         * Hides a modal.
+         * @param {HTMLElement} modalElement - The modal overlay element to hide.
+         */
+        function hideModal(modalElement) {
+            modalElement.classList.remove('show');
+            // Use a timeout to allow transition to complete before hiding
+            setTimeout(() => {
+                modalElement.classList.add('hidden');
+            }, 300);
+        }
+
+        /**
+         * Handles the game over condition.
+         */
+        function gameOver() {
+            gameEnded = true;
+            disableGameButtons(true);
+            showModal(gameMessageModal, 'You Lose the Game!', 'lose');
+            clearInterval(lifeRegenIntervalId); // Stop life regeneration
+        }
+
+        /**
+         * Handles the game won condition.
+         */
+        function gameWon() {
+            gameEnded = true;
+            disableGameButtons(true);
+            showModal(gameMessageModal, 'You Won the Game!', 'win');
+            clearInterval(lifeRegenIntervalId); // Stop life regeneration
+        }
+
+        /**
+         * Starts the life regeneration interval.
+         */
+        function startLifeRegen() {
+            // Clear any existing interval to prevent duplicates
+            if (lifeRegenIntervalId) {
+                clearInterval(lifeRegenIntervalId);
+            }
+            lifeRegenIntervalId = setInterval(() => {
+                if (playerLives < 10) { // Cap lives at 10
+                    playerLives++;
+                    updateDisplays();
+                    resultDisplay.textContent = 'You gained 1 life!';
+                    resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-green-600', 'text-yellow-700');
+                    resultDisplay.classList.add('text-purple-600');
+                    setTimeout(() => {
+                        if (!gameEnded) { // Only reset if game is still active
+                            resultDisplay.textContent = 'Choose your move!';
+                            resultDisplay.classList.remove('text-purple-600');
+                            resultDisplay.classList.add('text-gray-900');
+                        }
+                    }, 2000); // Display message for 2 seconds
+                }
+            }, LIFE_REGEN_TIME_MS);
+            console.log(`Life regeneration started. Gaining 1 life every ${LIFE_REGEN_TIME_MS / 1000 / 60} minutes.`);
+        }
+
+        /**
+         * Handles buying a life from the shop.
+         */
+        function buyLife() {
+            shopMessage.textContent = ''; // Clear previous messages
+            if (playerCoins >= LIFE_COST) {
+                if (playerLives < 10) { // Max lives is 10
+                    playerCoins -= LIFE_COST;
+                    playerLives++;
+                    updateDisplays();
+                    shopMessage.textContent = 'Life purchased!';
+                    shopMessage.classList.remove('text-red-500');
+                    shopMessage.classList.add('text-green-500');
+                } else {
+                    shopMessage.textContent = 'Lives are full!';
+                    shopMessage.classList.remove('text-green-500');
+                    shopMessage.classList.add('text-red-500');
+                }
+            } else {
+                shopMessage.textContent = 'Not enough coins!';
+                shopMessage.classList.remove('text-green-500');
+                shopMessage.classList.add('text-red-500');
+            }
+        }
+
+        /**
+         * Handles buying Hero Rank from the shop.
+         */
+        function buyHeroRank() {
+            shopMessage.textContent = ''; // Clear previous messages
+            if (playerCoins >= HERO_RANK_COST) {
+                if (playerRank !== 'Hero') {
+                    playerCoins -= HERO_RANK_COST;
+                    playerXP = RANK_THRESHOLDS['Hero']; // Set XP to Hero threshold
+                    updateDisplays();
+                    updateRank(); // Force rank update
+                    shopMessage.textContent = 'Hero Rank purchased!';
+                    shopMessage.classList.remove('text-red-500');
+                    shopMessage.classList.add('text-green-500');
+                } else {
+                    shopMessage.textContent = 'You are already Hero rank!';
+                    shopMessage.classList.remove('text-green-500');
+                    shopMessage.classList.add('text-red-500');
+                }
+            } else {
+                shopMessage.textContent = 'Not enough coins!';
+                shopMessage.classList.remove('text-green-500');
+                shopMessage.classList.add('text-red-500');
+            }
+        }
+
+
+        /**
+         * Plays a single round of Rock-Paper-Scissors.
+         * @param {string} playerSelection - The player's choice.
+         */
+        function playRound(playerSelection) {
+            if (gameEnded) {
+                return; // Prevent playing if game is over
+            }
+
+            if (playerCoins < ROUND_COST) {
+                resultDisplay.textContent = 'Not enough coins! Each round costs 10 coins.';
+                resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-gray-900', 'text-purple-600');
+                resultDisplay.classList.add('text-yellow-700');
+                return;
+            }
+
+            // Deduct coins for starting the round
+            playerCoins -= ROUND_COST;
+
+            const computerSelection = getComputerChoice();
+
+            // Display choices
+            playerChoiceDisplay.textContent = `${playerSelection.charAt(0).toUpperCase() + playerSelection.slice(1)} ${choiceIcons[playerSelection]}`;
+            computerChoiceDisplay.textContent = `${computerSelection.charAt(0).toUpperCase() + computerSelection.slice(1)} ${choiceIcons[computerSelection]}`;
+
+            const result = determineWinner(playerSelection, computerSelection);
+
+            // Update score, lives, and coins based on the outcome
+            if (result === 'win') {
+                playerScore++;
+                playerCoins += WIN_REWARD_COINS;
+                playerXP += WIN_REWARD_XP; // Add XP on win
+                resultDisplay.textContent = 'You Win This Round!';
+                resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.add('text-green-600');
+            } else if (result === 'lose') {
+                computerScore++;
+                playerLives--;
+                playerCoins -= LOSE_PENALTY_COINS;
+                resultDisplay.textContent = 'You Lose This Round!';
+                resultDisplay.classList.remove('text-green-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.add('text-red-600');
+            } else { // It's a draw
+                resultDisplay.textContent = 'It\'s a Draw!';
+                resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.add('text-gray-900');
+                // No coin or life changes for a draw
+            }
+
+            // Update all displays and rank
+            updateDisplays();
+            updateRank(); // Update rank after XP changes
+
+            // Check for game end conditions
+            if (playerLives <= 0) {
+                gameOver();
+            } else if (playerScore >= WIN_CONDITION_SCORE) {
+                gameWon();
+            }
+        }
+
+        /**
+         * Resets the game scores, lives, coins, XP, rank and displays.
+         */
+        function resetGame() {
+            playerScore = 0;
+            computerScore = 0;
+            playerLives = 10;
+            playerCoins = 100;
+            playerXP = 0; // Reset XP
+            gameEnded = false;
+
+            updateDisplays(); // Update all displays to initial values
+            updateRank(); // Set initial rank to Bronze
+
+            resultDisplay.textContent = 'Choose your move!';
+            resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
+            resultDisplay.classList.add('text-gray-900');
+            playerChoiceDisplay.textContent = '';
+            computerChoiceDisplay.textContent = '';
+            shopMessage.textContent = ''; // Clear shop message
+
+            hideModal(gameMessageModal); // Hide the game over/win modal if it's visible
+            hideModal(instructionsModal); // Ensure instructions modal is hidden
+            hideModal(shopModal); // Ensure shop modal is hidden
+            disableGameButtons(false); // Enable game buttons
+            startLifeRegen(); // Restart life regeneration
+        }
+
+        /**
+         * Initializes the game by showing the start screen.
+         */
+        function initializeGame() {
+            startScreen.style.display = 'flex'; // Explicitly show start screen
+            gameScreen.style.display = 'none'; // Explicitly hide game screen
+            resetGame(); // Reset game state but keep game screen hidden
+            clearInterval(lifeRegenIntervalId); // Stop life regen on start screen
+        }
+
+        // Event Listeners for start screen buttons
+        startGameBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none'; // Explicitly hide start screen
+            gameScreen.style.display = 'flex'; // Explicitly show game screen
+            resetGame(); // Fully reset and start game
+        });
+
+        instructionsBtn.addEventListener('click', () => {
+            showModal(instructionsModal);
+        });
+
+        closeInstructionsBtn.addEventListener('click', () => {
+            hideModal(instructionsModal);
+        });
+
+        // Event Listeners for game choice buttons
+        rockBtn.addEventListener('click', () => playRound('rock'));
+        paperBtn.addEventListener('click', () => playRound('paper'));
+        scissorsBtn.addEventListener('click', () => playRound('scissors'));
+
+        // Event Listener for reset button
+        resetBtn.addEventListener('click', resetGame);
+
+        // Event Listener for "Shop" button on the game screen
+        shopBtnGameScreen.addEventListener('click', () => {
+            showModal(shopModal);
+            shopMessage.textContent = ''; // Clear message when opening shop
+            updateDisplays(); // Update coins in shop display
+        });
+
+        // Event Listener for "Shop" button on the start screen
+        shopBtnStartScreen.addEventListener('click', () => {
+            showModal(shopModal);
+            shopMessage.textContent = ''; // Clear message when opening shop
+            updateDisplays(); // Update coins in shop display
+        });
+
+        // Event Listener for "Buy Life" button in shop
+        buyLifeBtn.addEventListener('click', buyLife);
+
+        // Event Listener for "Buy Hero Rank" button in shop
+        buyHeroRankBtn.addEventListener('click', buyHeroRank);
+
+        // Event Listener for "Close Shop" button
+        closeShopBtn.addEventListener('click', () => {
+            hideModal(shopModal);
+        });
+
+        // Event Listener for "Play Again" button in the modal
+        playAgainBtn.addEventListener('click', resetGame);
+
+        // Initialize the game on window load to show the start screen
+        window.onload = initializeGame;
+    </script>
+</body>
+</html>
