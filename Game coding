@@ -218,3 +218,129 @@ def start_server():
 
 if __name__ == "__main__":
     start_server()
+Client coding 
+import socket
+import threading
+import json
+import os
+import sys # For sys.exit()
+
+# Configuration (SERVER_IP needs to be the server's public IP)
+SERVER_IP = '127.0.0.1' # Change this to the SERVER'S PUBLIC IP ADDRESS!
+SERVER_PORT = 12345     # Must match the port the server is listening on
+
+def clear_screen():
+    """Clears the console screen."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def listen_for_server_messages(sock):
+    """Listens for and processes messages from the server."""
+    while True:
+        try:
+            data = sock.recv(4096).decode('utf-8')
+            if not data:
+                print("\nServer disconnected. Game over.")
+                sys.exit() # Exit the client program
+            
+            # Server sends messages as JSON objects followed by a newline.
+            # We might receive multiple messages in one recv call, so split by newline.
+            messages = data.strip().split('\n')
+            for msg_str in messages:
+                if not msg_str: continue # Skip empty strings from multiple newlines
+                
+                try:
+                    message = json.loads(msg_str)
+                    msg_type = message.get("type")
+                    msg_data = message.get("data")
+
+                    if msg_type == "MESSAGE":
+                        print(f"\n{msg_data}")
+                    elif msg_type == "GAME_STATE_UPDATE":
+                        clear_screen()
+                        print("\n--- Current Lives ---")
+                        print(f"{msg_data['player1_name']} Lives: {msg_data['player1_lives']}")
+                        print(f"{msg_data['player2_name']} Lives: {msg_data['player2_lives']}")
+                        print("---------------------")
+                        print("Enter your choice (rock, paper, scissors) or type 'instructions':")
+                    elif msg_type == "ROUND_RESULT":
+                        clear_screen()
+                        print(f"\n{msg_data['current_state']['player1_name']} chose: {msg_data['p1_choice']}")
+                        print(f"{msg_data['current_state']['player2_name']} chose: {msg_data['p2_choice']}")
+                        print(f"\n{msg_data['message']}")
+                        print(f"--- Current Lives ---")
+                        print(f"{msg_data['current_state']['player1_name']} Lives: {msg_data['current_state']['player1_lives']}")
+                        print(f"{msg_data['current_state']['player2_name']} Lives: {msg_data['current_state']['player2_lives']}")
+                        print("---------------------")
+                        print("\nWaiting for next round or game over...")
+                    elif msg_type == "GAME_OVER":
+                        print(f"\n--- GAME OVER ---")
+                        if msg_data['winner'] == "Opponent Disconnected":
+                            print("Your opponent disconnected. You win by default!")
+                        else:
+                            print(f"{msg_data['winner']} won the game!")
+                        print("\nGame will close in 10 seconds...")
+                        time.sleep(10)
+                        sock.close() # Close socket
+                        sys.exit() # Exit the client program
+                    elif msg_type == "INSTRUCTIONS_RESPONSE":
+                        print(msg_data)
+                        print("\nEnter your choice (rock, paper, scissors) or type 'instructions':") # Prompt again after instructions
+                    else:
+                        print(f"Unknown message from server: {message}")
+
+                except json.JSONDecodeError:
+                    print(f"Received malformed JSON from server: {msg_str}")
+                except Exception as e:
+                    print(f"Error processing server message: {e}")
+
+        except ConnectionResetError:
+            print("\nServer disconnected. Game over.")
+            sys.exit()
+        except Exception as e:
+            print(f"An error occurred while listening to server: {e}")
+            break
+
+def start_client():
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        print(f"Attempting to connect to server at {SERVER_IP}:{SERVER_PORT}...")
+        client_socket.connect((SERVER_IP, SERVER_PORT))
+        print("Connected to server!")
+    except ConnectionRefusedError:
+        print(f"Connection refused. Ensure the server is running at {SERVER_IP}:{SERVER_PORT} and port forwarding is set up.")
+        return
+    except socket.gaierror:
+        print(f"Could not resolve server address. Check SERVER_IP: {SERVER_IP}")
+        return
+    except Exception as e:
+        print(f"An error occurred during connection: {e}")
+        return
+
+    # Start a separate thread to listen for server messages
+    listener_thread = threading.Thread(target=listen_for_server_messages, args=(client_socket,))
+    listener_thread.daemon = True # Allow main program to exit even if thread is running
+    listener_thread.start()
+
+    print("\nType 'instructions' for game rules.")
+    print("When prompted, enter your choice: rock, paper, or scissors.")
+
+    while True:
+        try:
+            player_input = input("> ").lower().strip()
+            if player_input in ['rock', 'paper', 'scissors', 'instructions']:
+                message = {"type": "CHOICE" if player_input != "instructions" else "INSTRUCTIONS", "data": player_input}
+                client_socket.sendall(json.dumps(message).encode('utf-8') + b"\n")
+            else:
+                print("Invalid input. Please type 'rock', 'paper', 'scissors', or 'instructions'.")
+        except KeyboardInterrupt:
+            print("\nExiting game.")
+            break
+        except Exception as e:
+            print(f"Error sending choice: {e}")
+            break
+
+    client_socket.close()
+    sys.exit() # Ensure client process truly exits
+
+if __name__ == "__main__":
+    start_client()
