@@ -53,7 +53,7 @@
         }
         .choice-button:active {
             transform: translateY(0);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4x 8px rgba(0, 0, 0, 0.1);
         }
         .choice-button.rock { background-color: #fecaca; } /* Red-100 */
         .choice-button.paper { background-color: #bfdbfe; } /* Blue-100 */
@@ -94,6 +94,25 @@
         .shop-button:hover {
             background-color: #2563eb; /* Blue-600 */
         }
+        .quests-button { /* New style for quests button */
+            background-color: #8b5cf6; /* Purple-500 */
+            color: white;
+        }
+        .quests-button:hover {
+            background-color: #7c3aed; /* Purple-600 */
+        }
+        .daily-bonus-button { /* New style for daily bonus button */
+            background-color: #f59e0b; /* Amber-500 */
+            color: white;
+        }
+        .daily-bonus-button:hover:not(:disabled) {
+            background-color: #d97706; /* Amber-600 */
+        }
+        .daily-bonus-button:disabled {
+            background-color: #fcd34d; /* Amber-300 */
+            color: #92400e;
+            cursor: not-allowed;
+        }
 
 
         /* Modal Styles */
@@ -126,19 +145,54 @@
             transform: scale(1);
             opacity: 1;
         }
-        .instructions-content {
+        .instructions-content, .quests-content { /* Added quests-content */
             text-align: left;
             margin-top: 1rem;
             font-size: 1.1rem;
             color: #4b5563;
         }
-        .instructions-content ul {
+        .instructions-content ul, .quests-content ul { /* Added quests-content */
             list-style-type: disc;
             margin-left: 20px;
         }
-        .instructions-content li {
+        .instructions-content li, .quests-content li { /* Added quests-content */
             margin-bottom: 0.5rem;
         }
+        .quest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .quest-item:last-child {
+            border-bottom: none;
+        }
+        .quest-item.completed .quest-description {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+        .quest-reward {
+            font-weight: bold;
+            color: #10b981; /* Green-500 */
+        }
+        .quest-button {
+            background-color: #10b981; /* Green-500 */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .quest-button:hover:not(:disabled) {
+            background-color: #059669; /* Green-600 */
+        }
+        .quest-button:disabled {
+            background-color: #d1fae5; /* Green-100 */
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
 
         /* Start Screen Specific Styles */
         #startScreen {
@@ -210,6 +264,33 @@
             box-sizing: border-box; /* Include padding in width/height */
             display: flex; /* Always flex, visibility controlled by JS */
         }
+
+        /* Styles for home screen stats */
+        .home-stats-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white; /* Text color for stats on blue background */
+        }
+        .home-stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        .home-stat-item p:first-child {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 0.25rem;
+        }
+        .home-stat-item p:last-child {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+        }
+        .home-stat-item .coins-text { color: #facc15; /* yellow-400 */ }
+        .home-stat-item .xp-text { color: #818cf8; /* indigo-300 */ }
+        .home-stat-item .rank-text { color: #34d399; /* green-400 */ }
+
     </style>
 </head>
 <body>
@@ -217,14 +298,34 @@
         <!-- Start Screen -->
         <div id="startScreen" class="flex flex-col items-center justify-center h-full w-full">
             <h1 class="text-5xl font-extrabold text-white mb-8">RPS Game</h1>
+
+            <!-- New: Home Screen Stats Display -->
+            <div class="home-stats-container">
+                <div class="home-stat-item">
+                    <p>Your Coins</p>
+                    <p id="homeCoinsDisplay" class="coins-text">0</p>
+                </div>
+                <div class="home-stat-item">
+                    <p>Your XP</p>
+                    <p id="homeXPDisplay" class="xp-text">0</p>
+                </div>
+                <div class="home-stat-item">
+                    <p>Your Rank</p>
+                    <p id="homeRankDisplay" class="rank-text">Bronze</p>
+                </div>
+            </div>
+
             <button id="startGameBtn" class="bg-blue-400 text-white py-4 px-10 rounded-xl font-bold text-2xl shadow-lg hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-opacity-75 mb-6">
                 Start Game
             </button>
             <button id="instructionsBtn" class="bg-gray-700 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mb-4">
                 Instructions
             </button>
-            <button id="shopBtnStartScreen" class="bg-yellow-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75">
+            <button id="shopBtnStartScreen" class="bg-yellow-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 mb-4">
                 Coin Shop
+            </button>
+            <button id="dailyBonusBtn" class="action-button daily-bonus-button py-3 px-8 rounded-xl font-bold text-xl shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-75">
+                Claim Daily Bonus
             </button>
         </div>
 
@@ -254,7 +355,7 @@
                 </div>
             </div>
 
-            <!-- New: XP and Rank Display -->
+            <!-- XP and Rank Display (on game screen) -->
             <div class="flex justify-around items-center text-center text-gray-700 font-semibold text-lg mb-6 w-full">
                 <div class="player-xp">
                     <p>XP</p>
@@ -292,11 +393,11 @@
             </div>
 
             <div class="flex justify-center gap-4 w-full">
-                <button id="resetBtn" class="action-button reset-button flex-1">
-                    Reset Game
-                </button>
                 <button id="shopBtnGameScreen" class="action-button shop-button flex-1">
                     Shop
+                </button>
+                <button id="questsBtn" class="action-button quests-button flex-1">
+                    Quests
                 </button>
             </div>
         </div>
@@ -306,7 +407,7 @@
             <div class="modal-content">
                 <h2 id="modalMessage" class="text-4xl font-extrabold mb-6"></h2>
                 <button id="playAgainBtn" class="bg-blue-600 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
-                    Play Again
+                    Return to Home
                 </button>
             </div>
         </div>
@@ -320,13 +421,15 @@
                         <li>Choose Rock, Paper, or Scissors to play a round against the computer.</li>
                         <li>Each round costs <span class="font-bold text-yellow-600">10 coins</span>.</li>
                         <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-green-600">+10 coins</span> and <span class="font-bold text-indigo-600">+100 XP</span>.</li>
-                        <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">10 coins</span> and <span class="font-bold text-red-600">1 life</span>.</li>
+                        <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">10 coins</span> and <span class="font-bold text-red-600">1 life</span>, and <span class="font-bold text-red-600">-100 XP</span>.</li>
                         <li>If it's a <span class="font-bold text-gray-900">draw</span>, no coins, lives, or XP are affected.</li>
                         <li>You start with <span class="font-bold text-purple-600">10 lives</span>.</li>
                         <li>You gain <span class="font-bold text-purple-600">1 life every 10 minutes</span> (up to 10 lives).</li>
                         <li>The game ends if your lives drop to <span class="font-bold text-red-600">0</span> (You Lose!).</li>
                         <li>Win the game by achieving <span class="font-bold text-blue-600">10 player wins</span>!</li>
                         <li>Visit the <span class="font-bold text-blue-600">Coin Shop</span> to buy lives and ranks.</li>
+                        <li>Check the <span class="font-bold text-purple-600">Quests</span> for extra rewards!</li>
+                        <li>Claim your <span class="font-bold text-yellow-600">Daily Bonus</span> of 100 coins every 24 hours!</li>
                     </ul>
                     <h3 class="text-xl font-bold mt-4">Ranks:</h3>
                     <ul>
@@ -361,6 +464,19 @@
                 </button>
             </div>
         </div>
+
+        <!-- Quests Modal -->
+        <div id="questsModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">Quests</h2>
+                <div id="questsList" class="quests-content mb-6">
+                    <!-- Quests will be rendered here by JavaScript -->
+                </div>
+                <button id="closeQuestsBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Close Quests
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -370,8 +486,14 @@
         const startGameBtn = document.getElementById('startGameBtn');
         const instructionsBtn = document.getElementById('instructionsBtn');
         const shopBtnStartScreen = document.getElementById('shopBtnStartScreen');
+        const dailyBonusBtn = document.getElementById('dailyBonusBtn');
         const instructionsModal = document.getElementById('instructionsModal');
         const closeInstructionsBtn = document.getElementById('closeInstructionsBtn');
+
+        // New home screen stat displays
+        const homeCoinsDisplay = document.getElementById('homeCoinsDisplay');
+        const homeXPDisplay = document.getElementById('homeXPDisplay');
+        const homeRankDisplay = document.getElementById('homeRankDisplay');
 
         const rockBtn = document.getElementById('rockBtn');
         const paperBtn = document.getElementById('paperBtn');
@@ -385,8 +507,8 @@
         const resultDisplay = document.getElementById('resultDisplay');
         const playerChoiceDisplay = document.getElementById('playerChoice');
         const computerChoiceDisplay = document.getElementById('computerChoice');
-        const resetBtn = document.getElementById('resetBtn');
         const shopBtnGameScreen = document.getElementById('shopBtnGameScreen');
+        const questsBtn = document.getElementById('questsBtn');
         const gameMessageModal = document.getElementById('gameMessageModal');
         const modalMessage = document.getElementById('modalMessage');
         const playAgainBtn = document.getElementById('playAgainBtn');
@@ -396,6 +518,9 @@
         const buyHeroRankBtn = document.getElementById('buyHeroRankBtn');
         const shopMessage = document.getElementById('shopMessage');
         const closeShopBtn = document.getElementById('closeShopBtn');
+        const questsModal = document.getElementById('questsModal');
+        const questsList = document.getElementById('questsList');
+        const closeQuestsBtn = document.getElementById('closeQuestsBtn');
 
         // Game state variables
         let playerScore = 0;
@@ -406,6 +531,7 @@
         let playerRank = 'Bronze';
         let gameEnded = false;
         let lifeRegenIntervalId;
+        let lastBonusClaimDate = 0;
 
         // Game constants
         const choices = ['rock', 'paper', 'scissors'];
@@ -418,10 +544,13 @@
         const WIN_REWARD_COINS = 10;
         const LOSE_PENALTY_COINS = 10;
         const WIN_REWARD_XP = 100;
+        const LOSE_PENALTY_XP = 100;
         const LIFE_REGEN_TIME_MS = 10 * 60 * 1000;
         const WIN_CONDITION_SCORE = 10;
         const LIFE_COST = 50;
         const HERO_RANK_COST = 200;
+        const DAILY_BONUS_AMOUNT = 100;
+        const DAILY_BONUS_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
         // Rank thresholds
         const RANK_THRESHOLDS = {
@@ -431,8 +560,59 @@
             'Hero': 1500
         };
 
+        // Quests data (can be expanded)
+        let quests = [
+            { id: 'quest1', description: 'Win 3 rounds', target: 3, current: 0, type: 'winRounds', xpReward: 150, coinReward: 50, isCompleted: false },
+            { id: 'quest2', description: 'Play 5 rounds', target: 5, current: 0, type: 'playRounds', xpReward: 100, coinReward: 30, isCompleted: false },
+            { id: 'quest3', description: 'Reach Silver Rank', target: RANK_THRESHOLDS['Silver'], type: 'reachRank', xpReward: 200, coinReward: 75, isCompleted: false },
+        ];
+
         /**
-         * Updates all game display elements (scores, lives, coins, XP, rank).
+         * Saves current game state to localStorage.
+         */
+        function saveGame() {
+            const gameState = {
+                playerScore,
+                computerScore,
+                playerLives,
+                playerCoins,
+                playerXP,
+                playerRank,
+                lastBonusClaimDate,
+                quests: quests.map(q => ({ ...q, current: q.current, isCompleted: q.isCompleted }))
+            };
+            localStorage.setItem('rpsGameState', JSON.stringify(gameState));
+        }
+
+        /**
+         * Loads game state from localStorage.
+         */
+        function loadGame() {
+            const savedState = localStorage.getItem('rpsGameState');
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                playerScore = gameState.playerScore || 0;
+                computerScore = gameState.computerScore || 0;
+                playerLives = gameState.playerLives || 10;
+                playerCoins = gameState.playerCoins || 100;
+                playerXP = gameState.playerXP || 0;
+                playerRank = gameState.playerRank || 'Bronze';
+                lastBonusClaimDate = gameState.lastBonusClaimDate || 0;
+
+                if (gameState.quests) {
+                    quests = quests.map(defaultQuest => {
+                        const savedQuest = gameState.quests.find(q => q.id === defaultQuest.id);
+                        return savedQuest ? { ...defaultQuest, current: savedQuest.current, isCompleted: savedQuest.isCompleted } : defaultQuest;
+                    });
+                }
+            }
+            updateDisplays();
+            updateRank();
+        }
+
+        /**
+         * Updates all game display elements (scores, lives, coins, XP, rank)
+         * including the new home screen displays.
          */
         function updateDisplays() {
             playerScoreDisplay.textContent = playerScore;
@@ -442,6 +622,11 @@
             playerXPDisplay.textContent = playerXP;
             playerRankDisplay.textContent = playerRank;
             shopCoinsDisplay.textContent = playerCoins;
+
+            // Update home screen displays
+            homeCoinsDisplay.textContent = playerCoins;
+            homeXPDisplay.textContent = playerXP;
+            homeRankDisplay.textContent = playerRank;
         }
 
         /**
@@ -452,20 +637,29 @@
                 playerRank = 'Hero';
                 playerRankDisplay.classList.remove('text-green-600', 'text-gray-600', 'text-yellow-600');
                 playerRankDisplay.classList.add('text-purple-600');
+                homeRankDisplay.classList.remove('text-green-400', 'text-gray-400', 'text-yellow-400');
+                homeRankDisplay.classList.add('text-purple-400');
             } else if (playerXP >= RANK_THRESHOLDS['Gold']) {
                 playerRank = 'Gold';
                 playerRankDisplay.classList.remove('text-green-600', 'text-gray-600', 'text-purple-600');
                 playerRankDisplay.classList.add('text-yellow-600');
+                homeRankDisplay.classList.remove('text-green-400', 'text-gray-400', 'text-purple-400');
+                homeRankDisplay.classList.add('text-yellow-400');
             } else if (playerXP >= RANK_THRESHOLDS['Silver']) {
                 playerRank = 'Silver';
                 playerRankDisplay.classList.remove('text-green-600', 'text-yellow-600', 'text-purple-600');
                 playerRankDisplay.classList.add('text-gray-600');
+                homeRankDisplay.classList.remove('text-green-400', 'text-yellow-400', 'text-purple-400');
+                homeRankDisplay.classList.add('text-gray-400');
             } else {
                 playerRank = 'Bronze';
                 playerRankDisplay.classList.remove('text-gray-600', 'text-yellow-600', 'text-purple-600');
                 playerRankDisplay.classList.add('text-green-600');
+                homeRankDisplay.classList.remove('text-gray-400', 'text-yellow-400', 'text-purple-400');
+                homeRankDisplay.classList.add('text-green-400');
             }
             updateDisplays();
+            saveGame();
         }
 
         /**
@@ -505,7 +699,6 @@
             rockBtn.disabled = disabled;
             paperBtn.disabled = disabled;
             scissorsBtn.disabled = disabled;
-            // Add/remove opacity for visual feedback
             [rockBtn, paperBtn, scissorsBtn].forEach(btn => {
                 if (disabled) {
                     btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -533,7 +726,7 @@
                 }
             }
             modalElement.classList.remove('hidden');
-            modalElement.classList.add('show'); // Trigger transition
+            modalElement.classList.add('show');
         }
 
         /**
@@ -542,7 +735,6 @@
          */
         function hideModal(modalElement) {
             modalElement.classList.remove('show');
-            // Use a timeout to allow transition to complete before hiding
             setTimeout(() => {
                 modalElement.classList.add('hidden');
             }, 300);
@@ -555,7 +747,8 @@
             gameEnded = true;
             disableGameButtons(true);
             showModal(gameMessageModal, 'You Lose the Game!', 'lose');
-            clearInterval(lifeRegenIntervalId); // Stop life regeneration
+            clearInterval(lifeRegenIntervalId);
+            saveGame();
         }
 
         /**
@@ -565,31 +758,32 @@
             gameEnded = true;
             disableGameButtons(true);
             showModal(gameMessageModal, 'You Won the Game!', 'win');
-            clearInterval(lifeRegenIntervalId); // Stop life regeneration
+            clearInterval(lifeRegenIntervalId);
+            saveGame();
         }
 
         /**
          * Starts the life regeneration interval.
          */
         function startLifeRegen() {
-            // Clear any existing interval to prevent duplicates
             if (lifeRegenIntervalId) {
                 clearInterval(lifeRegenIntervalId);
             }
             lifeRegenIntervalId = setInterval(() => {
-                if (playerLives < 10) { // Cap lives at 10
+                if (playerLives < 10) {
                     playerLives++;
                     updateDisplays();
                     resultDisplay.textContent = 'You gained 1 life!';
                     resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-green-600', 'text-yellow-700');
                     resultDisplay.classList.add('text-purple-600');
                     setTimeout(() => {
-                        if (!gameEnded) { // Only reset if game is still active
+                        if (!gameEnded) {
                             resultDisplay.textContent = 'Choose your move!';
                             resultDisplay.classList.remove('text-purple-600');
                             resultDisplay.classList.add('text-gray-900');
                         }
-                    }, 2000); // Display message for 2 seconds
+                    }, 2000);
+                    saveGame();
                 }
             }, LIFE_REGEN_TIME_MS);
             console.log(`Life regeneration started. Gaining 1 life every ${LIFE_REGEN_TIME_MS / 1000 / 60} minutes.`);
@@ -599,15 +793,16 @@
          * Handles buying a life from the shop.
          */
         function buyLife() {
-            shopMessage.textContent = ''; // Clear previous messages
+            shopMessage.textContent = '';
             if (playerCoins >= LIFE_COST) {
-                if (playerLives < 10) { // Max lives is 10
+                if (playerLives < 10) {
                     playerCoins -= LIFE_COST;
                     playerLives++;
                     updateDisplays();
                     shopMessage.textContent = 'Life purchased!';
                     shopMessage.classList.remove('text-red-500');
                     shopMessage.classList.add('text-green-500');
+                    saveGame();
                 } else {
                     shopMessage.textContent = 'Lives are full!';
                     shopMessage.classList.remove('text-green-500');
@@ -624,16 +819,17 @@
          * Handles buying Hero Rank from the shop.
          */
         function buyHeroRank() {
-            shopMessage.textContent = ''; // Clear previous messages
+            shopMessage.textContent = '';
             if (playerCoins >= HERO_RANK_COST) {
                 if (playerRank !== 'Hero') {
                     playerCoins -= HERO_RANK_COST;
-                    playerXP = RANK_THRESHOLDS['Hero']; // Set XP to Hero threshold
+                    playerXP = RANK_THRESHOLDS['Hero'];
                     updateDisplays();
-                    updateRank(); // Force rank update
+                    updateRank();
                     shopMessage.textContent = 'Hero Rank purchased!';
                     shopMessage.classList.remove('text-red-500');
                     shopMessage.classList.add('text-green-500');
+                    saveGame();
                 } else {
                     shopMessage.textContent = 'You are already Hero rank!';
                     shopMessage.classList.remove('text-green-500');
@@ -646,6 +842,141 @@
             }
         }
 
+        /**
+         * Handles claiming daily bonus coins.
+         */
+        function claimDailyBonus() {
+            const now = Date.now();
+            if (now - lastBonusClaimDate >= DAILY_BONUS_INTERVAL_MS) {
+                playerCoins += DAILY_BONUS_AMOUNT;
+                lastBonusClaimDate = now;
+                updateDisplays();
+                saveGame();
+                dailyBonusBtn.textContent = 'Bonus Claimed!';
+                dailyBonusBtn.disabled = true;
+                dailyBonusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                setTimeout(() => {
+                    updateDailyBonusButtonState();
+                }, 3000);
+            } else {
+                const timeLeft = DAILY_BONUS_INTERVAL_MS - (now - lastBonusClaimDate);
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                dailyBonusBtn.textContent = `Next Bonus in ${hours}h ${minutes}m`;
+                dailyBonusBtn.disabled = true;
+                dailyBonusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        /**
+         * Updates the state (enabled/disabled and text) of the daily bonus button.
+         */
+        function updateDailyBonusButtonState() {
+            const now = Date.now();
+            if (now - lastBonusClaimDate >= DAILY_BONUS_INTERVAL_MS) {
+                dailyBonusBtn.disabled = false;
+                dailyBonusBtn.textContent = 'Claim Daily Bonus';
+                dailyBonusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                const timeLeft = DAILY_BONUS_INTERVAL_MS - (now - lastBonusClaimDate);
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                dailyBonusBtn.textContent = `Next Bonus in ${hours}h ${minutes}m`;
+                dailyBonusBtn.disabled = true;
+                dailyBonusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                setTimeout(updateDailyBonusButtonState, timeLeft + 1000);
+            }
+        }
+
+
+        /**
+         * Updates quest progress based on game events.
+         * @param {string} type - The type of event ('winRounds', 'playRounds', 'reachRank').
+         * @param {any} value - The value associated with the event (e.g., number of wins, current XP).
+         */
+        function updateQuestProgress(type, value) {
+            quests.forEach(quest => {
+                if (!quest.isCompleted) {
+                    if (quest.type === type) {
+                        if (type === 'winRounds' || type === 'playRounds') {
+                            quest.current = value;
+                        } else if (type === 'reachRank') {
+                            if (playerXP >= quest.target) {
+                                // Quest is ready to be completed
+                            }
+                        }
+                    }
+                }
+            });
+            saveGame();
+            renderQuests();
+        }
+
+        /**
+         * Renders the quests in the quests modal.
+         */
+        function renderQuests() {
+            questsList.innerHTML = '';
+            quests.forEach(quest => {
+                const questItem = document.createElement('div');
+                questItem.classList.add('quest-item');
+                if (quest.isCompleted) {
+                    questItem.classList.add('completed');
+                }
+
+                let progressText = '';
+                let canComplete = false;
+
+                if (quest.type === 'winRounds' || quest.type === 'playRounds') {
+                    progressText = `(${quest.current}/${quest.target})`;
+                    canComplete = quest.current >= quest.target && !quest.isCompleted;
+                } else if (quest.type === 'reachRank') {
+                    progressText = `(Current XP: ${playerXP}/${quest.target})`;
+                    canComplete = playerXP >= quest.target && !quest.isCompleted;
+                }
+
+                questItem.innerHTML = `
+                    <div class="quest-details">
+                        <span class="quest-description">${quest.description} ${progressText}</span>
+                        <div class="quest-reward">
+                            +${quest.xpReward} XP, +${quest.coinReward} Coins
+                        </div>
+                    </div>
+                    <button class="quest-button" data-quest-id="${quest.id}" ${canComplete ? '' : 'disabled'}>
+                        ${quest.isCompleted ? 'Completed' : 'Claim'}
+                    </button>
+                `;
+                questsList.appendChild(questItem);
+            });
+
+            questsList.querySelectorAll('.quest-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const questId = event.target.dataset.questId;
+                    const quest = quests.find(q => q.id === questId);
+                    if (quest && !quest.isCompleted && event.target.disabled === false) {
+                        playerXP += quest.xpReward;
+                        playerCoins += quest.coinReward;
+                        quest.isCompleted = true;
+                        updateDisplays();
+                        updateRank();
+                        saveGame();
+                        renderQuests();
+                        resultDisplay.textContent = `Quest Completed! +${quest.xpReward} XP, +${quest.coinReward} Coins!`;
+                        resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
+                        resultDisplay.classList.add('text-green-600');
+                        setTimeout(() => {
+                            if (!gameEnded) {
+                                resultDisplay.textContent = 'Choose your move!';
+                                resultDisplay.classList.remove('text-green-600');
+                                resultDisplay.classList.add('text-gray-900');
+                            }
+                        }, 3000);
+                    }
+                });
+            });
+        }
+
 
         /**
          * Plays a single round of Rock-Paper-Scissors.
@@ -653,7 +984,7 @@
          */
         function playRound(playerSelection) {
             if (gameEnded) {
-                return; // Prevent playing if game is over
+                return;
             }
 
             if (playerCoins < ROUND_COST) {
@@ -663,44 +994,43 @@
                 return;
             }
 
-            // Deduct coins for starting the round
             playerCoins -= ROUND_COST;
 
             const computerSelection = getComputerChoice();
 
-            // Display choices
             playerChoiceDisplay.textContent = `${playerSelection.charAt(0).toUpperCase() + playerSelection.slice(1)} ${choiceIcons[playerSelection]}`;
             computerChoiceDisplay.textContent = `${computerSelection.charAt(0).toUpperCase() + computerSelection.slice(1)} ${choiceIcons[computerSelection]}`;
 
             const result = determineWinner(playerSelection, computerSelection);
 
-            // Update score, lives, and coins based on the outcome
             if (result === 'win') {
                 playerScore++;
                 playerCoins += WIN_REWARD_COINS;
-                playerXP += WIN_REWARD_XP; // Add XP on win
+                playerXP += WIN_REWARD_XP;
                 resultDisplay.textContent = 'You Win This Round!';
                 resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
                 resultDisplay.classList.add('text-green-600');
+                updateQuestProgress('winRounds', playerScore);
             } else if (result === 'lose') {
                 computerScore++;
                 playerLives--;
                 playerCoins -= LOSE_PENALTY_COINS;
+                playerXP = Math.max(0, playerXP - LOSE_PENALTY_XP);
                 resultDisplay.textContent = 'You Lose This Round!';
                 resultDisplay.classList.remove('text-green-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
                 resultDisplay.classList.add('text-red-600');
-            } else { // It's a draw
+            } else {
                 resultDisplay.textContent = 'It\'s a Draw!';
                 resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
                 resultDisplay.classList.add('text-gray-900');
-                // No coin or life changes for a draw
             }
 
-            // Update all displays and rank
-            updateDisplays();
-            updateRank(); // Update rank after XP changes
+            updateQuestProgress('playRounds', playerScore + computerScore);
 
-            // Check for game end conditions
+            updateDisplays();
+            updateRank();
+            saveGame();
+
             if (playerLives <= 0) {
                 gameOver();
             } else if (playerScore >= WIN_CONDITION_SCORE) {
@@ -716,41 +1046,61 @@
             computerScore = 0;
             playerLives = 10;
             playerCoins = 100;
-            playerXP = 0; // Reset XP
+            playerXP = 0;
             gameEnded = false;
+            lastBonusClaimDate = 0;
+            quests.forEach(quest => {
+                quest.isCompleted = false;
+                quest.current = 0;
+            });
 
-            updateDisplays(); // Update all displays to initial values
-            updateRank(); // Set initial rank to Bronze
+            updateDisplays();
+            updateRank();
 
             resultDisplay.textContent = 'Choose your move!';
             resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
             resultDisplay.classList.add('text-gray-900');
             playerChoiceDisplay.textContent = '';
             computerChoiceDisplay.textContent = '';
-            shopMessage.textContent = ''; // Clear shop message
+            shopMessage.textContent = '';
 
-            hideModal(gameMessageModal); // Hide the game over/win modal if it's visible
-            hideModal(instructionsModal); // Ensure instructions modal is hidden
-            hideModal(shopModal); // Ensure shop modal is hidden
-            disableGameButtons(false); // Enable game buttons
-            startLifeRegen(); // Restart life regeneration
+            hideModal(gameMessageModal);
+            hideModal(instructionsModal);
+            hideModal(shopModal);
+            hideModal(questsModal);
+            disableGameButtons(false);
+            startLifeRegen();
+            saveGame();
         }
 
         /**
          * Initializes the game by showing the start screen.
+         * This is called when the page loads or when returning from game over/win.
          */
         function initializeGame() {
-            startScreen.style.display = 'flex'; // Explicitly show start screen
-            gameScreen.style.display = 'none'; // Explicitly hide game screen
-            resetGame(); // Reset game state but keep game screen hidden
-            clearInterval(lifeRegenIntervalId); // Stop life regen on start screen
+            loadGame();
+            startScreen.style.display = 'flex';
+            gameScreen.style.display = 'none';
+            clearInterval(lifeRegenIntervalId);
+            gameEnded = false;
+            disableGameButtons(true);
+            updateDisplays(); // Ensure all displays, including home screen stats, are updated
+            updateRank();
+            updateDailyBonusButtonState();
         }
 
         // Event Listeners for start screen buttons
         startGameBtn.addEventListener('click', () => {
-            startScreen.style.display = 'none'; // Explicitly hide start screen
-            gameScreen.style.display = 'flex'; // Explicitly show game screen
-            resetGame(); // Fully reset and start game
+            startScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+            gameEnded = false;
+            disableGameButtons(false);
+            startLifeRegen();
+            updateDisplays();
+            updateRank();
+            resultDisplay.textContent = 'Choose your move!';
+            playerChoiceDisplay.textContent = '';
+            computerChoiceDisplay.textContent = '';
         });
 
         instructionsBtn.addEventListener('click', () => {
@@ -766,22 +1116,22 @@
         paperBtn.addEventListener('click', () => playRound('paper'));
         scissorsBtn.addEventListener('click', () => playRound('scissors'));
 
-        // Event Listener for reset button
-        resetBtn.addEventListener('click', resetGame);
-
         // Event Listener for "Shop" button on the game screen
         shopBtnGameScreen.addEventListener('click', () => {
             showModal(shopModal);
-            shopMessage.textContent = ''; // Clear message when opening shop
-            updateDisplays(); // Update coins in shop display
+            shopMessage.textContent = '';
+            updateDisplays();
         });
 
         // Event Listener for "Shop" button on the start screen
         shopBtnStartScreen.addEventListener('click', () => {
             showModal(shopModal);
-            shopMessage.textContent = ''; // Clear message when opening shop
-            updateDisplays(); // Update coins in shop display
+            shopMessage.textContent = '';
+            updateDisplays();
         });
+
+        // Event Listener for "Daily Bonus" button on the start screen
+        dailyBonusBtn.addEventListener('click', claimDailyBonus);
 
         // Event Listener for "Buy Life" button in shop
         buyLifeBtn.addEventListener('click', buyLife);
@@ -794,10 +1144,24 @@
             hideModal(shopModal);
         });
 
-        // Event Listener for "Play Again" button in the modal
-        playAgainBtn.addEventListener('click', resetGame);
+        // Event Listener for "Quests" button
+        questsBtn.addEventListener('click', () => {
+            renderQuests();
+            showModal(questsModal);
+        });
 
-        // Initialize the game on window load to show the start screen
+        // Event Listener for "Close Quests" button
+        closeQuestsBtn.addEventListener('click', () => {
+            hideModal(questsModal);
+        });
+
+        // Event Listener for "Return to Home" button in the game over/win modal
+        playAgainBtn.addEventListener('click', () => {
+            hideModal(gameMessageModal);
+            initializeGame();
+        });
+
+        // Initialize the game on window load
         window.onload = initializeGame;
     </script>
 </body>
