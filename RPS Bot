@@ -113,6 +113,28 @@
             color: #92400e;
             cursor: not-allowed;
         }
+        .google-signin-button {
+            background-color: #4285f4; /* Google Blue */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .google-signin-button:hover {
+            background-color: #357ae8;
+        }
+        .google-signin-button img {
+            width: 20px;
+            height: 20px;
+        }
 
 
         /* Modal Styles */
@@ -324,9 +346,14 @@
             <button id="shopBtnStartScreen" class="bg-yellow-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 mb-4">
                 Coin Shop
             </button>
-            <button id="dailyBonusBtn" class="action-button daily-bonus-button py-3 px-8 rounded-xl font-bold text-xl shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-75">
+            <button id="dailyBonusBtn" class="action-button daily-bonus-button py-3 px-8 rounded-xl font-bold text-xl shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-75 mb-4">
                 Claim Daily Bonus
             </button>
+            <button id="googleSignInBtn" class="google-signin-button">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_Google_SignIn_Dark_Background.svg" alt="Google Sign-in">
+                Sign In with Google
+            </button>
+            <p id="userIdDisplay" class="text-sm text-gray-300 mt-2"></p>
         </div>
 
         <!-- Main Game Screen (initially hidden) -->
@@ -420,14 +447,14 @@
                     <ul>
                         <li>Choose Rock, Paper, or Scissors to play a round against the computer.</li>
                         <li>Each round costs <span class="font-bold text-yellow-600">10 coins</span>.</li>
-                        <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-green-600">+10 coins</span> and <span class="font-bold text-indigo-600">+100 XP</span>.</li>
+                        <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-green-600">+50 coins</span> and <span class="font-bold text-indigo-600">+100 XP</span>.</li>
                         <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">10 coins</span> and <span class="font-bold text-red-600">1 life</span>, and <span class="font-bold text-red-600">-100 XP</span>.</li>
-                        <li>If it's a <span class="font-bold text-gray-900">draw</span>, no coins, lives, or XP are affected.</li>
+                        <li>If it's a <span class="font-bold text-gray-900">draw</span>, no additional coins, lives, or XP are affected (only the initial 10-coin round cost applies).</li>
                         <li>You start with <span class="font-bold text-purple-600">10 lives</span>.</li>
                         <li>You gain <span class="font-bold text-purple-600">1 life every 10 minutes</span> (up to 10 lives).</li>
                         <li>The game ends if your lives drop to <span class="font-bold text-red-600">0</span> (You Lose!).</li>
                         <li>Win the game by achieving <span class="font-bold text-blue-600">10 player wins</span>!</li>
-                        <li>Visit the <span class="font-bold text-blue-600">Coin Shop</span> to buy lives and ranks.</li>
+                        <li>Visit the <span class="font-bold text-blue-600">Coin Shop</span> to buy lives and ranks, and a special subscription!</li>
                         <li>Check the <span class="font-bold text-purple-600">Quests</span> for extra rewards!</li>
                         <li>Claim your <span class="font-bold text-yellow-600">Daily Bonus</span> of 100 coins every 24 hours!</li>
                     </ul>
@@ -437,6 +464,10 @@
                         <li><span class="font-bold text-gray-600">Silver:</span> 500 - 999 XP</li>
                         <li><span class="font-bold text-yellow-600">Gold:</span> 1000 - 1499 XP</li>
                         <li><span class="font-bold text-purple-600">Hero:</span> 1500+ XP</li>
+                    </ul>
+                    <h3 class="text-xl font-bold mt-4">Subscription:</h3>
+                    <ul>
+                        <li><span class="font-bold text-blue-600">Premium Subscription:</span> Costs <span class="font-bold text-yellow-600">2000 coins</span>. Gives you an <span class="font-bold text-green-600">extra chance to win</span> a round (turns a loss into a draw) once per game.</li>
                     </ul>
                 </div>
                 <button id="closeInstructionsBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
@@ -456,6 +487,9 @@
                     </button>
                     <button id="buyHeroRankBtn" class="bg-purple-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75">
                         Buy Hero Rank (200 Coins)
+                    </button>
+                    <button id="buySubscriptionBtn" class="bg-blue-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+                        Buy Premium Subscription (2000 Coins)
                     </button>
                     <p id="shopMessage" class="text-red-500 text-sm mt-2 min-h-[20px]"></p>
                 </div>
@@ -479,7 +513,23 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase variables (provided by Canvas)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let db;
+        let auth;
+        let userId = 'anonymous'; // Default to anonymous
+        let unsubscribeFromFirestore = null; // To manage Firestore listener
+
         // Get DOM elements
         const startScreen = document.getElementById('startScreen');
         const gameScreen = document.getElementById('gameScreen');
@@ -487,10 +537,12 @@
         const instructionsBtn = document.getElementById('instructionsBtn');
         const shopBtnStartScreen = document.getElementById('shopBtnStartScreen');
         const dailyBonusBtn = document.getElementById('dailyBonusBtn');
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const userIdDisplay = document.getElementById('userIdDisplay');
         const instructionsModal = document.getElementById('instructionsModal');
         const closeInstructionsBtn = document.getElementById('closeInstructionsBtn');
 
-        // New home screen stat displays
+        // Home screen stat displays
         const homeCoinsDisplay = document.getElementById('homeCoinsDisplay');
         const homeXPDisplay = document.getElementById('homeXPDisplay');
         const homeRankDisplay = document.getElementById('homeRankDisplay');
@@ -516,6 +568,7 @@
         const shopCoinsDisplay = document.getElementById('shopCoinsDisplay');
         const buyLifeBtn = document.getElementById('buyLifeBtn');
         const buyHeroRankBtn = document.getElementById('buyHeroRankBtn');
+        const buySubscriptionBtn = document.getElementById('buySubscriptionBtn');
         const shopMessage = document.getElementById('shopMessage');
         const closeShopBtn = document.getElementById('closeShopBtn');
         const questsModal = document.getElementById('questsModal');
@@ -532,6 +585,8 @@
         let gameEnded = false;
         let lifeRegenIntervalId;
         let lastBonusClaimDate = 0;
+        let hasSubscription = false;
+        let subscriptionUsedThisGame = false;
 
         // Game constants
         const choices = ['rock', 'paper', 'scissors'];
@@ -541,7 +596,7 @@
             'scissors': '✌️'
         };
         const ROUND_COST = 10;
-        const WIN_REWARD_COINS = 10;
+        const WIN_REWARD_COINS = 50; // Changed to 50
         const LOSE_PENALTY_COINS = 10;
         const WIN_REWARD_XP = 100;
         const LOSE_PENALTY_XP = 100;
@@ -549,6 +604,7 @@
         const WIN_CONDITION_SCORE = 10;
         const LIFE_COST = 50;
         const HERO_RANK_COST = 200;
+        const SUBSCRIPTION_COST = 2000;
         const DAILY_BONUS_AMOUNT = 100;
         const DAILY_BONUS_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
@@ -560,7 +616,7 @@
             'Hero': 1500
         };
 
-        // Quests data (can be expanded)
+        // Quests data
         let quests = [
             { id: 'quest1', description: 'Win 3 rounds', target: 3, current: 0, type: 'winRounds', xpReward: 150, coinReward: 50, isCompleted: false },
             { id: 'quest2', description: 'Play 5 rounds', target: 5, current: 0, type: 'playRounds', xpReward: 100, coinReward: 30, isCompleted: false },
@@ -568,9 +624,122 @@
         ];
 
         /**
-         * Saves current game state to localStorage.
+         * Initializes Firebase app and authentication.
          */
-        function saveGame() {
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Listen for auth state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = `Logged in: ${user.displayName || user.email || user.uid}`;
+                        googleSignInBtn.style.display = 'none'; // Hide sign-in button
+                        await loadUserData(userId); // Load user data from Firestore
+                    } else {
+                        userId = 'anonymous';
+                        userIdDisplay.textContent = 'Not logged in';
+                        googleSignInBtn.style.display = 'flex'; // Show sign-in button
+                        // If no user is logged in, try anonymous sign-in or use default local data
+                        if (!initialAuthToken) {
+                            await signInAnonymously(auth);
+                        }
+                        loadGame(); // Load from local storage if no user or anonymous
+                    }
+                    updateDailyBonusButtonState(); // Update daily bonus button state based on user
+                });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    console.log("No initial auth token, handling auth via onAuthStateChanged.");
+                }
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                loadGame();
+                updateDailyBonusButtonState();
+            }
+        }
+
+        /**
+         * Signs in the user with Google.
+         */
+        async function signInWithGoogle() {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Error signing in with Google:", error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    userIdDisplay.textContent = 'Sign-in cancelled.';
+                } else {
+                    userIdDisplay.textContent = `Sign-in error: ${error.message}`;
+                }
+            }
+        }
+
+        /**
+         * Loads user data from Firestore.
+         * @param {string} currentUserId - The ID of the currently authenticated user.
+         */
+        async function loadUserData(currentUserId) {
+            if (unsubscribeFromFirestore) {
+                unsubscribeFromFirestore();
+            }
+
+            const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'gameData', 'userProfile');
+
+            unsubscribeFromFirestore = onSnapshot(userDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    playerScore = data.playerScore || 0;
+                    computerScore = data.computerScore || 0;
+                    playerLives = data.playerLives || 10;
+                    playerCoins = data.playerCoins || 100;
+                    playerXP = data.playerXP || 0;
+                    playerRank = data.playerRank || 'Bronze';
+                    lastBonusClaimDate = data.lastBonusClaimDate || 0;
+                    hasSubscription = data.hasSubscription || false;
+
+                    if (data.quests) {
+                        quests = quests.map(defaultQuest => {
+                            const savedQuest = data.quests.find(q => q.id === defaultQuest.id);
+                            return savedQuest ? { ...defaultQuest, current: savedQuest.current, isCompleted: savedQuest.isCompleted } : defaultQuest;
+                        });
+                    }
+                    console.log("User data loaded from Firestore:", data);
+                } else {
+                    console.log("No user data found in Firestore, initializing new profile.");
+                    resetGame(false); // Initialize with default values for new users
+                }
+                updateDisplays();
+                updateRank();
+                updateDailyBonusButtonState();
+            }, (error) => {
+                console.error("Error listening to user data:", error);
+                loadGame(); // Fallback to local storage
+                updateDailyBonusButtonState();
+            });
+        }
+
+        /**
+         * Saves current game state to Firestore.
+         */
+        async function saveGame() {
+            if (userId === 'anonymous' || !db) {
+                const gameState = {
+                    playerScore, computerScore, playerLives, playerCoins, playerXP, playerRank, lastBonusClaimDate, hasSubscription,
+                    quests: quests.map(q => ({ ...q, current: q.current, isCompleted: q.isCompleted }))
+                };
+                localStorage.setItem('rpsGameState', JSON.stringify(gameState));
+                console.log("Game state saved to localStorage (anonymous or no DB).");
+                return;
+            }
+
             const gameState = {
                 playerScore,
                 computerScore,
@@ -579,14 +748,21 @@
                 playerXP,
                 playerRank,
                 lastBonusClaimDate,
-                quests: quests.map(q => ({ ...q, current: q.current, isCompleted: q.isCompleted }))
+                hasSubscription,
+                quests: quests.map(q => ({ id: q.id, current: q.current, isCompleted: q.isCompleted }))
             };
-            localStorage.setItem('rpsGameState', JSON.stringify(gameState));
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'gameData', 'userProfile');
+                await setDoc(userDocRef, gameState, { merge: true });
+                console.log("Game state saved to Firestore.");
+            } catch (error) {
+                console.error("Error saving game state to Firestore:", error);
+                localStorage.setItem('rpsGameState', JSON.stringify(gameState));
+                console.log("Game state saved to localStorage (Firestore save failed).");
+            }
         }
 
-        /**
-         * Loads game state from localStorage.
-         */
+        // The loadGame function is now primarily for localStorage fallback.
         function loadGame() {
             const savedState = localStorage.getItem('rpsGameState');
             if (savedState) {
@@ -598,6 +774,7 @@
                 playerXP = gameState.playerXP || 0;
                 playerRank = gameState.playerRank || 'Bronze';
                 lastBonusClaimDate = gameState.lastBonusClaimDate || 0;
+                hasSubscription = gameState.hasSubscription || false;
 
                 if (gameState.quests) {
                     quests = quests.map(defaultQuest => {
@@ -627,6 +804,19 @@
             homeCoinsDisplay.textContent = playerCoins;
             homeXPDisplay.textContent = playerXP;
             homeRankDisplay.textContent = playerRank;
+
+            // Update subscription button state in shop
+            if (buySubscriptionBtn) {
+                if (hasSubscription) {
+                    buySubscriptionBtn.textContent = 'Subscription Active!';
+                    buySubscriptionBtn.disabled = true;
+                    buySubscriptionBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    buySubscriptionBtn.textContent = `Buy Premium Subscription (${SUBSCRIPTION_COST} Coins)`;
+                    buySubscriptionBtn.disabled = false;
+                    buySubscriptionBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
         }
 
         /**
@@ -672,23 +862,41 @@
         }
 
         /**
-         * Determines the winner of the round.
+         * Determines the winner of the round, with subscription bonus.
          * @param {string} playerSelection - The player's choice.
          * @param {string} computerSelection - The computer's choice.
          * @returns {string} - The result of the round ('win', 'lose', or 'draw').
          */
         function determineWinner(playerSelection, computerSelection) {
+            let result = '';
             if (playerSelection === computerSelection) {
-                return 'draw';
+                result = 'draw';
             } else if (
                 (playerSelection === 'rock' && computerSelection === 'scissors') ||
                 (playerSelection === 'paper' && computerSelection === 'rock') ||
                 (playerSelection === 'scissors' && computerSelection === 'paper')
             ) {
-                return 'win';
+                result = 'win';
             } else {
-                return 'lose';
+                result = 'lose';
             }
+
+            // Apply subscription "extra chance to win"
+            if (result === 'lose' && hasSubscription && !subscriptionUsedThisGame) {
+                subscriptionUsedThisGame = true;
+                resultDisplay.textContent = 'Subscription saved you from a loss! It\'s a Draw!';
+                resultDisplay.classList.remove('text-red-600', 'text-green-600', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.add('text-blue-500');
+                setTimeout(() => {
+                    if (!gameEnded) {
+                        resultDisplay.textContent = 'Choose your move!';
+                        resultDisplay.classList.remove('text-blue-500');
+                        resultDisplay.classList.add('text-gray-900');
+                    }
+                }, 3000);
+                return 'draw';
+            }
+            return result;
         }
 
         /**
@@ -774,7 +982,7 @@
                     playerLives++;
                     updateDisplays();
                     resultDisplay.textContent = 'You gained 1 life!';
-                    resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-green-600', 'text-yellow-700');
+                    resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-green-600', 'text-yellow-700', 'text-blue-500');
                     resultDisplay.classList.add('text-purple-600');
                     setTimeout(() => {
                         if (!gameEnded) {
@@ -843,6 +1051,32 @@
         }
 
         /**
+         * Handles buying the Premium Subscription from the shop.
+         */
+        function buySubscription() {
+            shopMessage.textContent = '';
+            if (playerCoins >= SUBSCRIPTION_COST) {
+                if (!hasSubscription) {
+                    playerCoins -= SUBSCRIPTION_COST;
+                    hasSubscription = true;
+                    updateDisplays();
+                    shopMessage.textContent = 'Premium Subscription activated!';
+                    shopMessage.classList.remove('text-red-500');
+                    shopMessage.classList.add('text-green-500');
+                    saveGame();
+                } else {
+                    shopMessage.textContent = 'You already have a subscription!';
+                    shopMessage.classList.remove('text-green-500');
+                    shopMessage.classList.add('text-red-500');
+                }
+            } else {
+                shopMessage.textContent = 'Not enough coins for subscription!';
+                shopMessage.classList.remove('text-green-500');
+                shopMessage.classList.add('text-red-500');
+            }
+        }
+
+        /**
          * Handles claiming daily bonus coins.
          */
         function claimDailyBonus() {
@@ -888,7 +1122,6 @@
                 setTimeout(updateDailyBonusButtonState, timeLeft + 1000);
             }
         }
-
 
         /**
          * Updates quest progress based on game events.
@@ -963,7 +1196,7 @@
                         saveGame();
                         renderQuests();
                         resultDisplay.textContent = `Quest Completed! +${quest.xpReward} XP, +${quest.coinReward} Coins!`;
-                        resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
+                        resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
                         resultDisplay.classList.add('text-green-600');
                         setTimeout(() => {
                             if (!gameEnded) {
@@ -977,7 +1210,6 @@
             });
         }
 
-
         /**
          * Plays a single round of Rock-Paper-Scissors.
          * @param {string} playerSelection - The player's choice.
@@ -989,12 +1221,12 @@
 
             if (playerCoins < ROUND_COST) {
                 resultDisplay.textContent = 'Not enough coins! Each round costs 10 coins.';
-                resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-gray-900', 'text-purple-600');
+                resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-gray-900', 'text-purple-600', 'text-blue-500');
                 resultDisplay.classList.add('text-yellow-700');
                 return;
             }
 
-            playerCoins -= ROUND_COST;
+            playerCoins -= ROUND_COST; // Deduct cost to play the round
 
             const computerSelection = getComputerChoice();
 
@@ -1005,22 +1237,23 @@
 
             if (result === 'win') {
                 playerScore++;
-                playerCoins += WIN_REWARD_COINS;
+                playerCoins += WIN_REWARD_COINS; // Add win reward
                 playerXP += WIN_REWARD_XP;
                 resultDisplay.textContent = 'You Win This Round!';
-                resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
                 resultDisplay.classList.add('text-green-600');
                 updateQuestProgress('winRounds', playerScore);
             } else if (result === 'lose') {
                 computerScore++;
                 playerLives--;
-                playerCoins -= LOSE_PENALTY_COINS;
+                playerCoins -= LOSE_PENALTY_COINS; // Subtract loss penalty
                 playerXP = Math.max(0, playerXP - LOSE_PENALTY_XP);
                 resultDisplay.textContent = 'You Lose This Round!';
-                resultDisplay.classList.remove('text-green-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.remove('text-green-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
                 resultDisplay.classList.add('text-red-600');
-            } else {
-                resultDisplay.textContent = 'It\'s a Draw!';
+            } else { // It's a draw (either natural or due to subscription)
+                // No additional coin/life/XP changes for a draw, only the initial ROUND_COST deduction applies.
+                resultDisplay.textContent = resultDisplay.textContent.includes('Subscription saved') ? resultDisplay.textContent : 'It\'s a Draw! No coins or lives affected.';
                 resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
                 resultDisplay.classList.add('text-gray-900');
             }
@@ -1040,25 +1273,32 @@
 
         /**
          * Resets the game scores, lives, coins, XP, rank and displays.
+         * @param {boolean} fullReset - If true, resets all game data including bonus date and quests.
+         * If false, it's a soft reset for new game session (e.g., after login).
          */
-        function resetGame() {
+        function resetGame(fullReset = true) {
             playerScore = 0;
             computerScore = 0;
             playerLives = 10;
             playerCoins = 100;
             playerXP = 0;
             gameEnded = false;
-            lastBonusClaimDate = 0;
-            quests.forEach(quest => {
-                quest.isCompleted = false;
-                quest.current = 0;
-            });
+            subscriptionUsedThisGame = false;
+
+            if (fullReset) {
+                lastBonusClaimDate = 0;
+                hasSubscription = false;
+                quests.forEach(quest => {
+                    quest.isCompleted = false;
+                    quest.current = 0;
+                });
+            }
 
             updateDisplays();
             updateRank();
 
             resultDisplay.textContent = 'Choose your move!';
-            resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
+            resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
             resultDisplay.classList.add('text-gray-900');
             playerChoiceDisplay.textContent = '';
             computerChoiceDisplay.textContent = '';
@@ -1077,14 +1317,14 @@
          * Initializes the game by showing the start screen.
          * This is called when the page loads or when returning from game over/win.
          */
-        function initializeGame() {
-            loadGame();
+        async function initializeGame() {
+            await initializeFirebase();
             startScreen.style.display = 'flex';
             gameScreen.style.display = 'none';
             clearInterval(lifeRegenIntervalId);
             gameEnded = false;
             disableGameButtons(true);
-            updateDisplays(); // Ensure all displays, including home screen stats, are updated
+            updateDisplays();
             updateRank();
             updateDailyBonusButtonState();
         }
@@ -1094,6 +1334,7 @@
             startScreen.style.display = 'none';
             gameScreen.style.display = 'flex';
             gameEnded = false;
+            subscriptionUsedThisGame = false;
             disableGameButtons(false);
             startLifeRegen();
             updateDisplays();
@@ -1133,11 +1374,17 @@
         // Event Listener for "Daily Bonus" button on the start screen
         dailyBonusBtn.addEventListener('click', claimDailyBonus);
 
+        // Event Listener for "Sign In with Google" button
+        googleSignInBtn.addEventListener('click', signInWithGoogle);
+
         // Event Listener for "Buy Life" button in shop
         buyLifeBtn.addEventListener('click', buyLife);
 
         // Event Listener for "Buy Hero Rank" button in shop
         buyHeroRankBtn.addEventListener('click', buyHeroRank);
+
+        // Event Listener for "Buy Subscription" button in shop
+        buySubscriptionBtn.addEventListener('click', buySubscription);
 
         // Event Listener for "Close Shop" button
         closeShopBtn.addEventListener('click', () => {
