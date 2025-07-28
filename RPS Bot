@@ -459,17 +459,23 @@
                 <div class="instructions-content">
                     <ul>
                         <li>Choose Rock, Paper, or Scissors to play a round against the computer.</li>
-                        <li>You pay a one-time entry fee when you start a new game:
+                        <li>You pay a one-time entry fee when you start a new game based on difficulty:
                             <ul>
                                 <li>Easy: <span class="font-bold text-yellow-600">100 coins</span></li>
                                 <li>Medium: <span class="font-bold text-yellow-600">200 coins</span></li>
                                 <li>Hard: <span class="font-bold text-yellow-600">300 coins</span></li>
                             </ul>
                         </li>
-                        <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-green-600">+50 coins</span> and <span class="font-bold text-indigo-600">+100 XP</span>.</li>
+                        <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-indigo-600">+100 XP</span>. No coins are awarded per round.</li>
                         <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">1 life</span> and <span class="font-bold text-red-600">-100 XP</span>. No coins are lost per round.</li>
                         <li>If it's a <span class="font-bold text-gray-900">draw</span>, no coins, lives, or XP are affected.</li>
-                        <li>You start with <span class="font-bold text-purple-600">10 lives</span>.</li>
+                        <li>You always start with <span class="font-bold text-purple-600">10 lives</span>. The computer's lives vary by difficulty:
+                            <ul>
+                                <li>Easy: Computer has <span class="font-bold text-red-600">5 lives</span>.</li>
+                                <li>Medium: Computer has <span class="font-bold text-red-600">10 lives</span>.</li>
+                                <li>Hard: Computer has <span class="font-bold text-red-600">15 lives</span>.</li>
+                            </ul>
+                        </li>
                         <li>You gain <span class="font-bold text-purple-600">1 life every 10 minutes</span> (up to 10 lives).</li>
                         <li>The game ends if your lives drop to <span class="font-bold text-red-600">0</span> (You Lose!). If you lose the game, you will incur a coin penalty based on difficulty:
                             <ul>
@@ -478,7 +484,13 @@
                                 <li>Hard: <span class="font-bold text-red-600">-150 coins</span></li>
                             </ul>
                         </li>
-                        <li>Win the game by achieving <span class="font-bold text-blue-600">10 player wins</span>!</li>
+                        <li>Win the game by achieving <span class="font-bold text-blue-600">10 player wins</span>! If you win the game, you will receive a coin bonus:
+                            <ul>
+                                <li>Easy: <span class="font-bold text-green-600">+200 coins</span></li>
+                                <li>Medium: <span class="font-bold text-green-600">+300 coins</span></li>
+                                <li>Hard: <span class="font-bold text-green-600">+400 coins</span></li>
+                            </ul>
+                        </li>
                         <li>Visit the <span class="font-bold text-blue-600">Coin Shop</span> to buy lives and ranks, and a special subscription!</li>
                         <li>Check the <span class="font-bold text-purple-600">Quests</span> for extra rewards!</li>
                         <li>Claim your <span class="font-bold text-yellow-600">Daily Bonus</span> of 100 coins every 24 hours!</li>
@@ -636,7 +648,8 @@
         // Game state variables
         let playerScore = 0;
         let computerScore = 0;
-        let playerLives = 10;
+        let playerLives = 10; // Player lives are fixed at 10
+        let computerLives = 0; // Computer lives will be set by difficulty
         let playerCoins = 100;
         let playerXP = 0;
         let playerRank = 'Bronze';
@@ -654,22 +667,22 @@
             'paper': '✋',
             'scissors': '✌️'
         };
-        const WIN_REWARD_COINS = 50;
+        // Removed WIN_REWARD_COINS constant, now part of DIFFICULTY_SETTINGS
         const WIN_REWARD_XP = 100;
         const LOSE_PENALTY_XP = 100;
         const LIFE_REGEN_TIME_MS = 10 * 60 * 1000;
-        const WIN_CONDITION_SCORE = 10;
+        const WIN_CONDITION_SCORE = 10; // Player needs 10 wins to win the match
         const LIFE_COST = 50;
         const HERO_RANK_COST = 200;
         const SUBSCRIPTION_COST = 2000;
         const DAILY_BONUS_AMOUNT = 100;
         const DAILY_BONUS_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
-        // Difficulty settings
+        // Difficulty settings with new properties
         const DIFFICULTY_SETTINGS = {
-            'easy': { entryCost: 100, gameLossPenalty: 50 },
-            'medium': { entryCost: 200, gameLossPenalty: 100 },
-            'hard': { entryCost: 300, gameLossPenalty: 150 }
+            'easy': { entryCost: 100, gameLossPenalty: 50, computerLives: 5, winRewardCoins: 200 },
+            'medium': { entryCost: 200, gameLossPenalty: 100, computerLives: 10, winRewardCoins: 300 },
+            'hard': { entryCost: 300, gameLossPenalty: 150, computerLives: 15, winRewardCoins: 400 }
         };
 
         // Rank thresholds
@@ -761,6 +774,7 @@
                     playerScore = data.playerScore || 0;
                     computerScore = data.computerScore || 0;
                     playerLives = data.playerLives || 10;
+                    // computerLives is not persisted, it's set per game based on difficulty
                     playerCoins = data.playerCoins || 100;
                     playerXP = data.playerXP || 0;
                     playerRank = data.playerRank || 'Bronze';
@@ -1037,9 +1051,15 @@
         function gameWon() {
             gameEnded = true;
             disableGameButtons(true);
-            showModal(gameMessageModal, 'You Won the Game!', 'win');
-            clearInterval(lifeRegenIntervalId);
+
+            // Award coins for winning the game based on difficulty
+            const winReward = DIFFICULTY_SETTINGS[currentDifficulty].winRewardCoins;
+            playerCoins += winReward;
+            updateDisplays();
             saveGame();
+
+            showModal(gameMessageModal, `You Won the Game! Gained ${winReward} Coins!`, 'win');
+            clearInterval(lifeRegenIntervalId);
         }
 
         /**
@@ -1302,7 +1322,7 @@
 
             if (result === 'win') {
                 playerScore++;
-                playerCoins += WIN_REWARD_COINS;
+                // playerCoins += WIN_REWARD_COINS; // REMOVED: No per-round coin gain
                 playerXP += WIN_REWARD_XP;
                 resultDisplay.textContent = 'You Win This Round!';
                 resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
@@ -1342,12 +1362,12 @@
         function resetGame(fullReset = true) {
             playerScore = 0;
             computerScore = 0;
-            playerLives = 10;
+            playerLives = 10; // Player lives always reset to 10
             playerXP = 0;
 
             gameEnded = false;
             subscriptionUsedThisGame = false;
-            currentDifficulty = null;
+            currentDifficulty = null; // Clear difficulty
 
             if (fullReset) {
                 playerCoins = 100;
@@ -1415,6 +1435,11 @@
                 if (playerCoins >= cost) {
                     playerCoins -= cost;
                     currentDifficulty = difficulty;
+                    playerScore = 0; // Reset player score for new game
+                    computerScore = 0; // Reset computer score for new game
+                    playerLives = 10; // Player lives always start at 10
+                    computerLives = DIFFICULTY_SETTINGS[difficulty].computerLives; // Set computer lives based on difficulty
+
                     updateDisplays();
                     saveGame();
 
@@ -1445,7 +1470,6 @@
             showModal(instructionsModal);
         });
 
-        // Event Listener for the new close button on instructions modal
         closeInstructionsBtn.addEventListener('click', () => {
             hideModal(instructionsModal);
         });
