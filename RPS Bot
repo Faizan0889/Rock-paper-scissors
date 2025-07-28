@@ -80,13 +80,6 @@
             transform: translateY(0);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .reset-button {
-            background-color: #ef4444; /* Red-500 */
-            color: white;
-        }
-        .reset-button:hover {
-            background-color: #dc2626; /* Red-600 */
-        }
         .shop-button {
             background-color: #3b82f6; /* Blue-500 */
             color: white;
@@ -162,22 +155,24 @@
             transition: transform 0.3s ease-out, opacity 0.3s ease-out;
             max-width: 90%; /* Ensure modal is responsive */
             min-width: 300px; /* Minimum width for readability */
+            max-height: 90vh; /* Added: Limit height to 90% of viewport height */
+            overflow-y: auto; /* Added: Enable vertical scrolling for content overflow */
         }
         .modal-overlay.show .modal-content {
             transform: scale(1);
             opacity: 1;
         }
-        .instructions-content, .quests-content { /* Added quests-content */
+        .instructions-content, .quests-content, .difficulty-content {
             text-align: left;
             margin-top: 1rem;
             font-size: 1.1rem;
             color: #4b5563;
         }
-        .instructions-content ul, .quests-content ul { /* Added quests-content */
+        .instructions-content ul, .quests-content ul, .difficulty-content ul {
             list-style-type: disc;
             margin-left: 20px;
         }
-        .instructions-content li, .quests-content li { /* Added quests-content */
+        .instructions-content li, .quests-content li, .difficulty-content li {
             margin-bottom: 0.5rem;
         }
         .quest-item {
@@ -212,6 +207,24 @@
         .quest-button:disabled {
             background-color: #d1fae5; /* Green-100 */
             color: #6b7280;
+            cursor: not-allowed;
+        }
+        .difficulty-button {
+            background-color: #4f46e5; /* Indigo-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s;
+        }
+        .difficulty-button:hover:not(:disabled) {
+            background-color: #4338ca; /* Indigo-700 */
+        }
+        .difficulty-button:disabled {
+            background-color: #a5b4fc; /* Indigo-300 */
+            color: #4f46e5;
             cursor: not-allowed;
         }
 
@@ -321,7 +334,7 @@
         <div id="startScreen" class="flex flex-col items-center justify-center h-full w-full">
             <h1 class="text-5xl font-extrabold text-white mb-8">RPS Game</h1>
 
-            <!-- New: Home Screen Stats Display -->
+            <!-- Home Screen Stats Display -->
             <div class="home-stats-container">
                 <div class="home-stat-item">
                     <p>Your Coins</p>
@@ -446,13 +459,25 @@
                 <div class="instructions-content">
                     <ul>
                         <li>Choose Rock, Paper, or Scissors to play a round against the computer.</li>
-                        <li>Each round costs <span class="font-bold text-yellow-600">10 coins</span>.</li>
+                        <li>You pay a one-time entry fee when you start a new game:
+                            <ul>
+                                <li>Easy: <span class="font-bold text-yellow-600">100 coins</span></li>
+                                <li>Medium: <span class="font-bold text-yellow-600">200 coins</span></li>
+                                <li>Hard: <span class="font-bold text-yellow-600">300 coins</span></li>
+                            </ul>
+                        </li>
                         <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-green-600">+50 coins</span> and <span class="font-bold text-indigo-600">+100 XP</span>.</li>
-                        <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">10 coins</span> and <span class="font-bold text-red-600">1 life</span>, and <span class="font-bold text-red-600">-100 XP</span>.</li>
-                        <li>If it's a <span class="font-bold text-gray-900">draw</span>, no additional coins, lives, or XP are affected (only the initial 10-coin round cost applies).</li>
+                        <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">1 life</span> and <span class="font-bold text-red-600">-100 XP</span>. No coins are lost per round.</li>
+                        <li>If it's a <span class="font-bold text-gray-900">draw</span>, no coins, lives, or XP are affected.</li>
                         <li>You start with <span class="font-bold text-purple-600">10 lives</span>.</li>
                         <li>You gain <span class="font-bold text-purple-600">1 life every 10 minutes</span> (up to 10 lives).</li>
-                        <li>The game ends if your lives drop to <span class="font-bold text-red-600">0</span> (You Lose!).</li>
+                        <li>The game ends if your lives drop to <span class="font-bold text-red-600">0</span> (You Lose!). If you lose the game, you will incur a coin penalty based on difficulty:
+                            <ul>
+                                <li>Easy: <span class="font-bold text-red-600">-50 coins</span></li>
+                                <li>Medium: <span class="font-bold text-red-600">-100 coins</span></li>
+                                <li>Hard: <span class="font-bold text-red-600">-150 coins</span></li>
+                            </ul>
+                        </li>
                         <li>Win the game by achieving <span class="font-bold text-blue-600">10 player wins</span>!</li>
                         <li>Visit the <span class="font-bold text-blue-600">Coin Shop</span> to buy lives and ranks, and a special subscription!</li>
                         <li>Check the <span class="font-bold text-purple-600">Quests</span> for extra rewards!</li>
@@ -511,6 +536,29 @@
                 </button>
             </div>
         </div>
+
+        <!-- Difficulty Selection Modal -->
+        <div id="difficultyModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">Select Difficulty</h2>
+                <p class="text-xl text-gray-700 mb-6">Current Coins: <span id="difficultyCoinsDisplay" class="font-bold text-yellow-600"></span></p>
+                <div class="flex flex-col gap-4 mb-6">
+                    <button id="easyBtn" class="difficulty-button" data-difficulty="easy">
+                        Easy (100 Coins Entry)
+                    </button>
+                    <button id="mediumBtn" class="difficulty-button" data-difficulty="medium">
+                        Medium (200 Coins Entry)
+                    </button>
+                    <button id="hardBtn" class="difficulty-button" data-difficulty="hard">
+                        Hard (300 Coins Entry)
+                    </button>
+                    <p id="difficultyMessage" class="text-red-500 text-sm mt-2 min-h-[20px]"></p>
+                </div>
+                <button id="closeDifficultyBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Cancel
+                </button>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -527,8 +575,8 @@
         let app;
         let db;
         let auth;
-        let userId = 'anonymous'; // Default to anonymous
-        let unsubscribeFromFirestore = null; // To manage Firestore listener
+        let userId = 'anonymous';
+        let unsubscribeFromFirestore = null;
 
         // Get DOM elements
         const startScreen = document.getElementById('startScreen');
@@ -575,6 +623,16 @@
         const questsList = document.getElementById('questsList');
         const closeQuestsBtn = document.getElementById('closeQuestsBtn');
 
+        // Difficulty selection modal elements
+        const difficultyModal = document.getElementById('difficultyModal');
+        const difficultyCoinsDisplay = document.getElementById('difficultyCoinsDisplay');
+        const easyBtn = document.getElementById('easyBtn');
+        const mediumBtn = document.getElementById('mediumBtn');
+        const hardBtn = document.getElementById('hardBtn');
+        const difficultyMessage = document.getElementById('difficultyMessage');
+        const closeDifficultyBtn = document.getElementById('closeDifficultyBtn');
+
+
         // Game state variables
         let playerScore = 0;
         let computerScore = 0;
@@ -587,6 +645,7 @@
         let lastBonusClaimDate = 0;
         let hasSubscription = false;
         let subscriptionUsedThisGame = false;
+        let currentDifficulty = null;
 
         // Game constants
         const choices = ['rock', 'paper', 'scissors'];
@@ -595,9 +654,7 @@
             'paper': '✋',
             'scissors': '✌️'
         };
-        const ROUND_COST = 10;
-        const WIN_REWARD_COINS = 50; // Changed to 50
-        const LOSE_PENALTY_COINS = 10;
+        const WIN_REWARD_COINS = 50;
         const WIN_REWARD_XP = 100;
         const LOSE_PENALTY_XP = 100;
         const LIFE_REGEN_TIME_MS = 10 * 60 * 1000;
@@ -607,6 +664,13 @@
         const SUBSCRIPTION_COST = 2000;
         const DAILY_BONUS_AMOUNT = 100;
         const DAILY_BONUS_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+        // Difficulty settings
+        const DIFFICULTY_SETTINGS = {
+            'easy': { entryCost: 100, gameLossPenalty: 50 },
+            'medium': { entryCost: 200, gameLossPenalty: 100 },
+            'hard': { entryCost: 300, gameLossPenalty: 150 }
+        };
 
         // Rank thresholds
         const RANK_THRESHOLDS = {
@@ -632,24 +696,22 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Listen for auth state changes
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
                         userIdDisplay.textContent = `Logged in: ${user.displayName || user.email || user.uid}`;
-                        googleSignInBtn.style.display = 'none'; // Hide sign-in button
-                        await loadUserData(userId); // Load user data from Firestore
+                        googleSignInBtn.style.display = 'none';
+                        await loadUserData(userId);
                     } else {
                         userId = 'anonymous';
                         userIdDisplay.textContent = 'Not logged in';
-                        googleSignInBtn.style.display = 'flex'; // Show sign-in button
-                        // If no user is logged in, try anonymous sign-in or use default local data
+                        googleSignInBtn.style.display = 'flex';
                         if (!initialAuthToken) {
                             await signInAnonymously(auth);
                         }
-                        loadGame(); // Load from local storage if no user or anonymous
+                        loadGame();
                     }
-                    updateDailyBonusButtonState(); // Update daily bonus button state based on user
+                    updateDailyBonusButtonState();
                 });
 
                 if (initialAuthToken) {
@@ -714,14 +776,14 @@
                     console.log("User data loaded from Firestore:", data);
                 } else {
                     console.log("No user data found in Firestore, initializing new profile.");
-                    resetGame(false); // Initialize with default values for new users
+                    resetGame(false);
                 }
                 updateDisplays();
                 updateRank();
                 updateDailyBonusButtonState();
             }, (error) => {
                 console.error("Error listening to user data:", error);
-                loadGame(); // Fallback to local storage
+                loadGame();
                 updateDailyBonusButtonState();
             });
         }
@@ -816,6 +878,10 @@
                     buySubscriptionBtn.disabled = false;
                     buySubscriptionBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
+            }
+            // Update difficulty modal coins display
+            if (difficultyCoinsDisplay) {
+                difficultyCoinsDisplay.textContent = playerCoins;
             }
         }
 
@@ -954,9 +1020,15 @@
         function gameOver() {
             gameEnded = true;
             disableGameButtons(true);
-            showModal(gameMessageModal, 'You Lose the Game!', 'lose');
-            clearInterval(lifeRegenIntervalId);
+
+            // Apply coin penalty for losing the game
+            const penalty = DIFFICULTY_SETTINGS[currentDifficulty].gameLossPenalty;
+            playerCoins = Math.max(0, playerCoins - penalty); // Ensure coins don't go below 0
+            updateDisplays();
             saveGame();
+
+            showModal(gameMessageModal, `You Lose the Game! Lost ${penalty} Coins!`, 'lose');
+            clearInterval(lifeRegenIntervalId);
         }
 
         /**
@@ -1099,6 +1171,8 @@
                 dailyBonusBtn.textContent = `Next Bonus in ${hours}h ${minutes}m`;
                 dailyBonusBtn.disabled = true;
                 dailyBonusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                setTimeout(updateDailyBonusButtonState, timeLeft + 1000);
             }
         }
 
@@ -1219,15 +1293,6 @@
                 return;
             }
 
-            if (playerCoins < ROUND_COST) {
-                resultDisplay.textContent = 'Not enough coins! Each round costs 10 coins.';
-                resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-gray-900', 'text-purple-600', 'text-blue-500');
-                resultDisplay.classList.add('text-yellow-700');
-                return;
-            }
-
-            playerCoins -= ROUND_COST; // Deduct cost to play the round
-
             const computerSelection = getComputerChoice();
 
             playerChoiceDisplay.textContent = `${playerSelection.charAt(0).toUpperCase() + playerSelection.slice(1)} ${choiceIcons[playerSelection]}`;
@@ -1237,7 +1302,7 @@
 
             if (result === 'win') {
                 playerScore++;
-                playerCoins += WIN_REWARD_COINS; // Add win reward
+                playerCoins += WIN_REWARD_COINS;
                 playerXP += WIN_REWARD_XP;
                 resultDisplay.textContent = 'You Win This Round!';
                 resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
@@ -1246,13 +1311,11 @@
             } else if (result === 'lose') {
                 computerScore++;
                 playerLives--;
-                playerCoins -= LOSE_PENALTY_COINS; // Subtract loss penalty
                 playerXP = Math.max(0, playerXP - LOSE_PENALTY_XP);
                 resultDisplay.textContent = 'You Lose This Round!';
                 resultDisplay.classList.remove('text-green-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
                 resultDisplay.classList.add('text-red-600');
             } else { // It's a draw (either natural or due to subscription)
-                // No additional coin/life/XP changes for a draw, only the initial ROUND_COST deduction applies.
                 resultDisplay.textContent = resultDisplay.textContent.includes('Subscription saved') ? resultDisplay.textContent : 'It\'s a Draw! No coins or lives affected.';
                 resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
                 resultDisplay.classList.add('text-gray-900');
@@ -1280,12 +1343,14 @@
             playerScore = 0;
             computerScore = 0;
             playerLives = 10;
-            playerCoins = 100;
             playerXP = 0;
+
             gameEnded = false;
             subscriptionUsedThisGame = false;
+            currentDifficulty = null;
 
             if (fullReset) {
+                playerCoins = 100;
                 lastBonusClaimDate = 0;
                 hasSubscription = false;
                 quests.forEach(quest => {
@@ -1303,13 +1368,15 @@
             playerChoiceDisplay.textContent = '';
             computerChoiceDisplay.textContent = '';
             shopMessage.textContent = '';
+            difficultyMessage.textContent = '';
 
             hideModal(gameMessageModal);
             hideModal(instructionsModal);
             hideModal(shopModal);
             hideModal(questsModal);
-            disableGameButtons(false);
-            startLifeRegen();
+            hideModal(difficultyModal);
+            disableGameButtons(true);
+            clearInterval(lifeRegenIntervalId);
             saveGame();
         }
 
@@ -1331,23 +1398,54 @@
 
         // Event Listeners for start screen buttons
         startGameBtn.addEventListener('click', () => {
-            startScreen.style.display = 'none';
-            gameScreen.style.display = 'flex';
-            gameEnded = false;
-            subscriptionUsedThisGame = false;
-            disableGameButtons(false);
-            startLifeRegen();
-            updateDisplays();
-            updateRank();
-            resultDisplay.textContent = 'Choose your move!';
-            playerChoiceDisplay.textContent = '';
-            computerChoiceDisplay.textContent = '';
+            showModal(difficultyModal);
+            difficultyCoinsDisplay.textContent = playerCoins;
+            difficultyMessage.textContent = '';
+            easyBtn.disabled = playerCoins < DIFFICULTY_SETTINGS['easy'].entryCost;
+            mediumBtn.disabled = playerCoins < DIFFICULTY_SETTINGS['medium'].entryCost;
+            hardBtn.disabled = playerCoins < DIFFICULTY_SETTINGS['hard'].entryCost;
         });
+
+        // Event listeners for difficulty buttons
+        document.querySelectorAll('.difficulty-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const difficulty = event.target.dataset.difficulty;
+                const cost = DIFFICULTY_SETTINGS[difficulty].entryCost;
+
+                if (playerCoins >= cost) {
+                    playerCoins -= cost;
+                    currentDifficulty = difficulty;
+                    updateDisplays();
+                    saveGame();
+
+                    hideModal(difficultyModal);
+                    startScreen.style.display = 'none';
+                    gameScreen.style.display = 'flex';
+                    gameEnded = false;
+                    subscriptionUsedThisGame = false;
+                    disableGameButtons(false);
+                    startLifeRegen();
+                    resultDisplay.textContent = `Game started on ${difficulty.toUpperCase()} difficulty!`;
+                    resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500', 'text-green-600');
+                    resultDisplay.classList.add('text-gray-900');
+                    playerChoiceDisplay.textContent = '';
+                    computerChoiceDisplay.textContent = '';
+                } else {
+                    difficultyMessage.textContent = 'Not enough coins for this difficulty!';
+                }
+            });
+        });
+
+        closeDifficultyBtn.addEventListener('click', () => {
+            hideModal(difficultyModal);
+        });
+
 
         instructionsBtn.addEventListener('click', () => {
             showModal(instructionsModal);
         });
 
+        // Event Listener for the new close button on instructions modal
         closeInstructionsBtn.addEventListener('click', () => {
             hideModal(instructionsModal);
         });
