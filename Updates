@@ -1,2 +1,1545 @@
- updating right now ! Fixing bugs !
-visit again tommorow at 5:00 pm  thanks !
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the game */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem; /* Increased padding */
+            width: 100%;
+            max-width: 800px; /* Increased from 600px */
+            min-height: 600px; /* Ensure a minimum height */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative; /* For modal positioning */
+            overflow: hidden; /* Ensure stars don't overflow rounded corners */
+        }
+        .choice-button {
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid transparent;
+            font-weight: 600;
+            color: #374151; /* Darker text */
+        }
+        .choice-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .choice-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4x 8px rgba(0, 0, 0, 0.1);
+        }
+        .choice-button.rock { background-color: #fecaca; } /* Red-100 */
+        .choice-button.paper { background-color: #bfdbfe; } /* Blue-100 */
+        .choice-button.scissors { background-color: #d1fae5; } /* Green-100 */
+
+        .choice-button .icon {
+            font-size: 3rem; /* Larger icons */
+            margin-bottom: 0.5rem;
+        }
+
+        .action-button {
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .shop-button {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+        }
+        .shop-button:hover {
+            background-color: #2563eb; /* Blue-600 */
+        }
+        .quests-button { /* New style for quests button */
+            background-color: #8b5cf6; /* Purple-500 */
+            color: white;
+        }
+        .quests-button:hover {
+            background-color: #7c3aed; /* Purple-600 */
+        }
+        .daily-bonus-button { /* New style for daily bonus button */
+            background-color: #f59e0b; /* Amber-500 */
+            color: white;
+        }
+        .daily-bonus-button:hover:not(:disabled) {
+            background-color: #d97706; /* Amber-600 */
+        }
+        .daily-bonus-button:disabled {
+            background-color: #fcd34d; /* Amber-300 */
+            color: #92400e;
+            cursor: not-allowed;
+        }
+        .google-signin-button {
+            background-color: #4285f4; /* Google Blue */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .google-signin-button:hover {
+            background-color: #357ae8;
+        }
+        .google-signin-button img {
+            width: 20px;
+            height: 20px;
+        }
+
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            border-radius: 1.5rem; /* Match container border radius */
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            max-width: 90%; /* Ensure modal is responsive */
+            min-width: 300px; /* Minimum width for readability */
+            max-height: 90vh; /* Added: Limit height to 90% of viewport height */
+            overflow-y: auto; /* Added: Enable vertical scrolling for content overflow */
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .instructions-content, .quests-content, .difficulty-content {
+            text-align: left;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            color: #4b5563;
+        }
+        .instructions-content ul, .quests-content ul, .difficulty-content ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .instructions-content li, .quests-content li, .difficulty-content li {
+            margin-bottom: 0.5rem;
+        }
+        .quest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .quest-item:last-child {
+            border-bottom: none;
+        }
+        .quest-item.completed .quest-description {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+        .quest-reward {
+            font-weight: bold;
+            color: #10b981; /* Green-500 */
+        }
+        .quest-button {
+            background-color: #10b981; /* Green-500 */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .quest-button:hover:not(:disabled) {
+            background-color: #059669; /* Green-600 */
+        }
+        .quest-button:disabled {
+            background-color: #d1fae5; /* Green-100 */
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        .difficulty-button {
+            background-color: #4f46e5; /* Indigo-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s;
+        }
+        .difficulty-button:hover:not(:disabled) {
+            background-color: #4338ca; /* Indigo-700 */
+        }
+        .difficulty-button:disabled {
+            background-color: #a5b4fc; /* Indigo-300 */
+            color: #4f46e5;
+            cursor: not-allowed;
+        }
+
+
+        /* Start Screen Specific Styles */
+        #startScreen {
+            background: linear-gradient(to bottom right, #1e3a8a, #172554); /* Deep blue gradient */
+            color: white;
+            position: absolute; /* Position absolutely within game-container */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10; /* Ensure it's above game screen */
+            border-radius: 1.5rem; /* Match game-container border radius */
+            /* Ensure start screen fills its parent */
+            display: flex; /* Ensure it's flex by default for layout */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem; /* Match game-container padding */
+            box-sizing: border-box; /* Include padding in width/height */
+        }
+
+        /* Starry background effect for start screen */
+        #startScreen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 80px 100px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 150px 120px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 200px 50px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 250px 180px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 300px 20px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 350px 150px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 400px 80px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 450px 200px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 500px 70px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 550px 130px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 60px 220px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 120px 250px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 180px 280px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 240px 300px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 300px 320px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 360px 340px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 420px 360px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 480px 380px, #eee, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 540px 400px, #eee, rgba(0,0,0,0));
+            background-size: 600px 400px; /* Adjust as needed for star density */
+            animation: twinkle 10s infinite alternate; /* Twinkling animation */
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        #startScreen h1, #startScreen button {
+            z-index: 20; /* Ensure text and buttons are above stars */
+            position: relative;
+        }
+
+        /* Ensure game screen fills its parent when visible */
+        #gameScreen {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box; /* Include padding in width/height */
+            display: flex; /* Always flex, visibility controlled by JS */
+        }
+
+        /* Styles for home screen stats */
+        .home-stats-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white; /* Text color for stats on blue background */
+        }
+        .home-stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        .home-stat-item p:first-child {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 0.25rem;
+        }
+        .home-stat-item p:last-child {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+        }
+        .home-stat-item .coins-text { color: #facc15; /* yellow-400 */ }
+        .home-stat-item .xp-text { color: #818cf8; /* indigo-300 */ }
+        .home-stat-item .rank-text { color: #34d399; /* green-400 */ }
+
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Start Screen -->
+        <div id="startScreen" class="flex flex-col items-center justify-center h-full w-full">
+            <h1 class="text-5xl font-extrabold text-white mb-8">RPS Game</h1>
+
+            <!-- Home Screen Stats Display -->
+            <div class="home-stats-container">
+                <div class="home-stat-item">
+                    <p>Your Coins</p>
+                    <p id="homeCoinsDisplay" class="coins-text">0</p>
+                </div>
+                <div class="home-stat-item">
+                    <p>Your XP</p>
+                    <p id="homeXPDisplay" class="xp-text">0</p>
+                </div>
+                <div class="home-stat-item">
+                    <p>Your Rank</p>
+                    <p id="homeRankDisplay" class="rank-text">Bronze</p>
+                </div>
+            </div>
+
+            <button id="startGameBtn" class="bg-blue-400 text-white py-4 px-10 rounded-xl font-bold text-2xl shadow-lg hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-opacity-75 mb-6">
+                Start Game
+            </button>
+            <button id="instructionsBtn" class="bg-gray-700 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mb-4">
+                Instructions
+            </button>
+            <button id="shopBtnStartScreen" class="bg-yellow-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 mb-4">
+                Coin Shop
+            </button>
+            <button id="dailyBonusBtn" class="action-button daily-bonus-button py-3 px-8 rounded-xl font-bold text-xl shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-75 mb-4">
+                Claim Daily Bonus
+            </button>
+            <button id="googleSignInBtn" class="google-signin-button">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_Google_SignIn_Dark_Background.svg" alt="Google Sign-in">
+                Sign In with Google
+            </button>
+            <p id="userIdDisplay" class="text-sm text-gray-300 mt-2"></p>
+        </div>
+
+        <!-- Main Game Screen (initially hidden) -->
+        <div id="gameScreen" class="flex-col items-center justify-center" style="display: none;">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Rock Paper Scissors</h1>
+
+            <div class="flex justify-around items-center text-center text-gray-700 font-semibold text-lg mb-6 w-full">
+                <div class="player-score">
+                    <p>Player Wins</p>
+                    <p id="playerScore" class="text-5xl font-bold text-blue-600">0</p>
+                </div>
+                <div class="computer-score">
+                    <p>Computer Wins</p>
+                    <p id="computerScore" class="text-5xl font-bold text-red-600">0</p>
+                </div>
+            </div>
+
+            <div class="flex justify-around items-center text-center text-gray-700 font-semibold text-lg mb-6 w-full">
+                <div class="player-lives">
+                    <p>Your Lives</p>
+                    <p id="playerLives" class="text-4xl font-bold text-purple-600">10</p>
+                </div>
+                <div class="computer-lives">
+                    <p>Computer Lives</p>
+                    <p id="computerLives" class="text-4xl font-bold text-red-600">0</p>
+                </div>
+                <div class="player-coins">
+                    <p>Coins</p>
+                    <p id="playerCoins" class="text-4xl font-bold text-yellow-600">100</p>
+                </div>
+            </div>
+
+            <!-- XP and Rank Display (on game screen) -->
+            <div class="flex justify-around items-center text-center text-gray-700 font-semibold text-lg mb-6 w-full">
+                <div class="player-xp">
+                    <p>XP</p>
+                    <p id="playerXP" class="text-4xl font-bold text-indigo-600">0</p>
+                </div>
+                <div class="player-rank">
+                    <p>Rank</p>
+                    <p id="playerRank" class="text-4xl font-bold text-green-600">Bronze</p>
+                </div>
+            </div>
+
+
+            <div id="resultDisplay" class="text-3xl font-bold text-gray-900 mb-6 min-h-[40px] flex items-center justify-center">
+                Choose your move!
+            </div>
+
+            <div class="flex justify-center gap-4 mb-8 flex-wrap w-full">
+                <button id="rockBtn" class="choice-button rock flex-1 min-w-[120px] max-w-[180px]">
+                    <span class="icon">✊</span>
+                    Rock
+                </button>
+                <button id="paperBtn" class="choice-button paper flex-1 min-w-[120px] max-w-[180px]">
+                    <span class="icon">✋</span>
+                    Paper
+                </button>
+                <button id="scissorsBtn" class="choice-button scissors flex-1 min-w-[120px] max-w-[180px]">
+                    <span class="icon">✌️</span>
+                    Scissors
+                </button>
+            </div>
+
+            <div class="text-lg text-gray-600 mb-4">
+                <p>Your Choice: <span id="playerChoice" class="font-bold text-blue-700"></span></p>
+                <p>Computer Choice: <span id="computerChoice" class="font-bold text-red-700"></span></p>
+            </div>
+
+            <div class="flex justify-center gap-4 w-full">
+                <button id="shopBtnGameScreen" class="action-button shop-button flex-1">
+                    Shop
+                </button>
+                <button id="questsBtn" class="action-button quests-button flex-1">
+                    Quests
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over/Win Modal -->
+        <div id="gameMessageModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 id="modalMessage" class="text-4xl font-extrabold mb-6"></h2>
+                <button id="playAgainBtn" class="bg-blue-600 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+                    Return to Home
+                </button>
+            </div>
+        </div>
+
+        <!-- Instructions Modal -->
+        <div id="instructionsModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">How to Play</h2>
+                <div class="instructions-content">
+                    <ul>
+                        <li>Choose Rock, Paper, or Scissors to play a round against the computer.</li>
+                        <li>You pay a one-time entry fee when you start a new game based on difficulty:
+                            <ul>
+                                <li>Easy: <span class="font-bold text-yellow-600">100 coins</span></li>
+                                <li>Medium: <span class="font-bold text-yellow-600">200 coins</span></li>
+                                <li>Hard: <span class="font-bold text-yellow-600">300 coins</span></li>
+                            </ul>
+                        </li>
+                        <li>If you <span class="font-bold text-green-600">win</span> a round, you get <span class="font-bold text-indigo-600">+100 XP</span>. No coins are awarded per round.</li>
+                        <li>If you <span class="font-bold text-red-600">lose</span> a round, you lose <span class="font-bold text-red-600">1 life</span> (either yours or the computer's, depending on who lost the round) and <span class="font-bold text-red-600">-100 XP</span>. No coins are lost per round.</li>
+                        <li>If it's a <span class="font-bold text-gray-900">draw</span>, no coins, lives, or XP are affected.</li>
+                        <li>You always start with <span class="font-bold text-purple-600">10 lives</span>. The computer's lives vary by difficulty:
+                            <ul>
+                                <li>Easy: Computer has <span class="font-bold text-red-600">5 lives</span>.</li>
+                                <li>Medium: Computer has <span class="font-bold text-red-600">10 lives</span>.</li>
+                                <li>Hard: Computer has <span class="font-bold text-red-600">15 lives</span>.</li>
+                            </ul>
+                        </li>
+                        <li>You gain <span class="font-bold text-purple-600">1 life every 10 minutes</span> (up to 10 lives).</li>
+                        <li>The game ends if your lives drop to <span class="font-bold text-red-600">0</span> (You Lose!). If you lose the game, you will incur a coin penalty based on difficulty:
+                            <ul>
+                                <li>Easy: <span class="font-bold text-red-600">-50 coins</span></li>
+                                <li>Medium: <span class="font-bold text-red-600">-100 coins</span></li>
+                                <li>Hard: <span class="font-bold text-red-600">-150 coins</span></li>
+                            </ul>
+                        </li>
+                        <li>Win the game by achieving <span class="font-bold text-blue-600">10 player wins</span>! If you win the game, you will receive a coin bonus:
+                            <ul>
+                                <li>Easy: <span class="font-bold text-green-600">+200 coins</span></li>
+                                <li>Medium: <span class="font-bold text-green-600">+300 coins</span></li>
+                                <li>Hard: <span class="font-bold text-green-600">+400 coins</span></li>
+                            </ul>
+                        </li>
+                        <li>Visit the <span class="font-bold text-blue-600">Coin Shop</span> to buy lives and ranks, and a special subscription!</li>
+                        <li>Check the <span class="font-bold text-purple-600">Quests</span> for extra rewards!</li>
+                        <li>Claim your <span class="font-bold text-yellow-600">Daily Bonus</span> of 100 coins every 24 hours!</li>
+                    </ul>
+                    <h3 class="text-xl font-bold mt-4">Ranks:</h3>
+                    <ul>
+                        <li><span class="font-bold text-green-600">Bronze:</span> 0 - 499 XP</li>
+                        <li><span class="font-bold text-gray-600">Silver:</span> 500 - 999 XP</li>
+                        <li><span class="font-bold text-yellow-600">Gold:</span> 1000 - 1499 XP</li>
+                        <li><span class="font-bold text-purple-600">Hero:</span> 1500+ XP</li>
+                    </ul>
+                    <h3 class="text-xl font-bold mt-4">Subscription:</h3>
+                    <ul>
+                        <li><span class="font-bold text-blue-600">Premium Subscription:</span> Costs <span class="font-bold text-yellow-600">2000 coins</span>. Gives you an <span class="font-bold text-green-600">extra chance to win</span> a round (turns a loss into a draw) once per game.</li>
+                    </ul>
+                </div>
+                <button id="closeInstructionsBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Got It!
+                </button>
+            </div>
+        </div>
+
+        <!-- Shop Modal -->
+        <div id="shopModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">Coin Shop</h2>
+                <p class="text-xl text-gray-700 mb-6">Your Coins: <span id="shopCoinsDisplay" class="font-bold text-yellow-600"></span></p>
+                <div class="flex flex-col gap-4">
+                    <button id="buyLifeBtn" class="bg-green-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+                        Buy 1 Life (50 Coins)
+                    </button>
+                    <button id="buyHeroRankBtn" class="bg-purple-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75">
+                        Buy Hero Rank (200 Coins)
+                    </button>
+                    <button id="buySubscriptionBtn" class="bg-blue-500 text-white py-3 px-8 rounded-xl font-bold text-xl shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+                        Buy Premium Subscription (2000 Coins)
+                    </button>
+                    <p id="shopMessage" class="text-red-500 text-sm mt-2 min-h-[20px]"></p>
+                </div>
+                <button id="closeShopBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Close Shop
+                </button>
+            </div>
+        </div>
+
+        <!-- Quests Modal -->
+        <div id="questsModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">Quests</h2>
+                <div id="questsList" class="quests-content mb-6">
+                    <!-- Quests will be rendered here by JavaScript -->
+                </div>
+                <button id="closeQuestsBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Close Quests
+                </button>
+            </div>
+        </div>
+
+        <!-- Difficulty Selection Modal -->
+        <div id="difficultyModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h2 class="text-3xl font-extrabold mb-4 text-gray-800">Select Difficulty</h2>
+                <p class="text-xl text-gray-700 mb-6">Current Coins: <span id="difficultyCoinsDisplay" class="font-bold text-yellow-600"></span></p>
+                <div class="flex flex-col gap-4 mb-6">
+                    <button id="easyBtn" class="difficulty-button" data-difficulty="easy">
+                        Easy (100 Coins Entry)
+                    </button>
+                    <button id="mediumBtn" class="difficulty-button" data-difficulty="medium">
+                        Medium (200 Coins Entry)
+                    </button>
+                    <button id="hardBtn" class="difficulty-button" data-difficulty="hard">
+                        Hard (300 Coins Entry)
+                    </button>
+                    <p id="difficultyMessage" class="text-red-500 text-sm mt-2 min-h-[20px]"></p>
+                </div>
+                <button id="closeDifficultyBtn" class="bg-gray-600 text-white py-2 px-6 rounded-xl font-bold text-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 mt-6">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase variables (provided by Canvas)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let db;
+        let auth;
+        let userId = 'anonymous';
+        let unsubscribeFromFirestore = null;
+
+        // Get DOM elements
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const instructionsBtn = document.getElementById('instructionsBtn');
+        const shopBtnStartScreen = document.getElementById('shopBtnStartScreen');
+        const dailyBonusBtn = document.getElementById('dailyBonusBtn');
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const instructionsModal = document.getElementById('instructionsModal');
+        const closeInstructionsBtn = document.getElementById('closeInstructionsBtn');
+
+        // Home screen stat displays
+        const homeCoinsDisplay = document.getElementById('homeCoinsDisplay');
+        const homeXPDisplay = document.getElementById('homeXPDisplay');
+        const homeRankDisplay = document.getElementById('homeRankDisplay');
+
+        const rockBtn = document.getElementById('rockBtn');
+        const paperBtn = document.getElementById('paperBtn');
+        const scissorsBtn = document.getElementById('scissorsBtn');
+        const playerScoreDisplay = document.getElementById('playerScore');
+        const computerScoreDisplay = document.getElementById('computerScore');
+        const playerLivesDisplay = document.getElementById('playerLives');
+        const computerLivesDisplay = document.getElementById('computerLives'); // New: Computer Lives Display
+        const playerCoinsDisplay = document.getElementById('playerCoins');
+        const playerXPDisplay = document.getElementById('playerXP');
+        const playerRankDisplay = document.getElementById('playerRank');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const playerChoiceDisplay = document.getElementById('playerChoice');
+        const computerChoiceDisplay = document.getElementById('computerChoice');
+        const shopBtnGameScreen = document.getElementById('shopBtnGameScreen');
+        const questsBtn = document.getElementById('questsBtn');
+        const gameMessageModal = document.getElementById('gameMessageModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const shopModal = document.getElementById('shopModal');
+        const shopCoinsDisplay = document.getElementById('shopCoinsDisplay');
+        const buyLifeBtn = document.getElementById('buyLifeBtn');
+        const buyHeroRankBtn = document.getElementById('buyHeroRankBtn');
+        const buySubscriptionBtn = document.getElementById('buySubscriptionBtn');
+        const shopMessage = document.getElementById('shopMessage');
+        const closeShopBtn = document.getElementById('closeShopBtn');
+        const questsModal = document.getElementById('questsModal');
+        const questsList = document.getElementById('questsList');
+        const closeQuestsBtn = document.getElementById('closeQuestsBtn');
+
+        // Difficulty selection modal elements
+        const difficultyModal = document.getElementById('difficultyModal');
+        const difficultyCoinsDisplay = document.getElementById('difficultyCoinsDisplay');
+        const easyBtn = document.getElementById('easyBtn');
+        const mediumBtn = document.getElementById('mediumBtn');
+        const hardBtn = document.getElementById('hardBtn');
+        const difficultyMessage = document.getElementById('difficultyMessage');
+        const closeDifficultyBtn = document.getElementById('closeDifficultyBtn');
+
+
+        // Game state variables
+        let playerScore = 0;
+        let computerScore = 0;
+        let playerLives = 10; // Player lives are fixed at 10
+        let computerLives = 0; // Computer lives will be set by difficulty
+        let playerCoins = 100;
+        let playerXP = 0;
+        let playerRank = 'Bronze';
+        let gameEnded = false;
+        let lifeRegenIntervalId;
+        let lastBonusClaimDate = 0;
+        let hasSubscription = false;
+        let subscriptionUsedThisGame = false;
+        let currentDifficulty = null;
+
+        // Game constants
+        const choices = ['rock', 'paper', 'scissors'];
+        const choiceIcons = {
+            'rock': '✊',
+            'paper': '✋',
+            'scissors': '✌️'
+        };
+        const WIN_REWARD_XP = 100;
+        const LOSE_PENALTY_XP = 100;
+        const LIFE_REGEN_TIME_MS = 10 * 60 * 1000;
+        const WIN_CONDITION_SCORE = 10; // Player needs 10 wins to win the match
+        const LIFE_COST = 50;
+        const HERO_RANK_COST = 200;
+        const SUBSCRIPTION_COST = 2000;
+        const DAILY_BONUS_AMOUNT = 100;
+        const DAILY_BONUS_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+        // Difficulty settings with new properties
+        const DIFFICULTY_SETTINGS = {
+            'easy': { entryCost: 100, gameLossPenalty: 50, computerLives: 5, winRewardCoins: 200 },
+            'medium': { entryCost: 200, gameLossPenalty: 100, computerLives: 10, winRewardCoins: 300 },
+            'hard': { entryCost: 300, gameLossPenalty: 150, computerLives: 15, winRewardCoins: 400 }
+        };
+
+        // Rank thresholds
+        const RANK_THRESHOLDS = {
+            'Bronze': 0,
+            'Silver': 500,
+            'Gold': 1000,
+            'Hero': 1500
+        };
+
+        // Quests data
+        let quests = [
+            { id: 'quest1', description: 'Win 3 rounds', target: 3, current: 0, type: 'winRounds', xpReward: 150, coinReward: 50, isCompleted: false },
+            { id: 'quest2', description: 'Play 5 rounds', target: 5, current: 0, type: 'playRounds', xpReward: 100, coinReward: 30, isCompleted: false },
+            { id: 'quest3', description: 'Reach Silver Rank', target: RANK_THRESHOLDS['Silver'], type: 'reachRank', xpReward: 200, coinReward: 75, isCompleted: false },
+        ];
+
+        /**
+         * Initializes Firebase app and authentication.
+         */
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = `Logged in: ${user.displayName || user.email || user.uid}`;
+                        googleSignInBtn.style.display = 'none';
+                        await loadUserData(userId);
+                    } else {
+                        userId = 'anonymous';
+                        userIdDisplay.textContent = 'Not logged in';
+                        googleSignInBtn.style.display = 'flex';
+                        if (!initialAuthToken) {
+                            await signInAnonymously(auth);
+                        }
+                        loadGame();
+                    }
+                    updateDailyBonusButtonState();
+                });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    console.log("No initial auth token, handling auth via onAuthStateChanged.");
+                }
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                loadGame();
+                updateDailyBonusButtonState();
+            }
+        }
+
+        /**
+         * Signs in the user with Google.
+         */
+        async function signInWithGoogle() {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Error signing in with Google:", error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    userIdDisplay.textContent = 'Sign-in cancelled.';
+                } else {
+                    userIdDisplay.textContent = `Sign-in error: ${error.message}`;
+                }
+            }
+        }
+
+        /**
+         * Loads user data from Firestore.
+         * @param {string} currentUserId - The ID of the currently authenticated user.
+         */
+        async function loadUserData(currentUserId) {
+            if (unsubscribeFromFirestore) {
+                unsubscribeFromFirestore();
+            }
+
+            const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'gameData', 'userProfile');
+
+            unsubscribeFromFirestore = onSnapshot(userDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    playerScore = data.playerScore || 0;
+                    computerScore = data.computerScore || 0;
+                    playerLives = data.playerLives || 10;
+                    // computerLives is not persisted, it's set per game based on difficulty
+                    playerCoins = data.playerCoins || 100;
+                    playerXP = data.playerXP || 0;
+                    playerRank = data.playerRank || 'Bronze';
+                    lastBonusClaimDate = data.lastBonusClaimDate || 0;
+                    hasSubscription = data.hasSubscription || false;
+
+                    if (data.quests) {
+                        quests = quests.map(defaultQuest => {
+                            const savedQuest = data.quests.find(q => q.id === defaultQuest.id);
+                            return savedQuest ? { ...defaultQuest, current: savedQuest.current, isCompleted: savedQuest.isCompleted } : defaultQuest;
+                        });
+                    }
+                    console.log("User data loaded from Firestore:", data);
+                } else {
+                    console.log("No user data found in Firestore, initializing new profile.");
+                    resetGame(false);
+                }
+                updateDisplays();
+                updateRank();
+                updateDailyBonusButtonState();
+            }, (error) => {
+                console.error("Error listening to user data:", error);
+                loadGame();
+                updateDailyBonusButtonState();
+            });
+        }
+
+        /**
+         * Saves current game state to Firestore.
+         */
+        async function saveGame() {
+            if (userId === 'anonymous' || !db) {
+                const gameState = {
+                    playerScore, computerScore, playerLives, playerCoins, playerXP, playerRank, lastBonusClaimDate, hasSubscription,
+                    quests: quests.map(q => ({ ...q, current: q.current, isCompleted: q.isCompleted }))
+                };
+                localStorage.setItem('rpsGameState', JSON.stringify(gameState));
+                console.log("Game state saved to localStorage (anonymous or no DB).");
+                return;
+            }
+
+            const gameState = {
+                playerScore,
+                computerScore,
+                playerLives,
+                playerCoins,
+                playerXP,
+                playerRank,
+                lastBonusClaimDate,
+                hasSubscription,
+                quests: quests.map(q => ({ id: q.id, current: q.current, isCompleted: q.isCompleted }))
+            };
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'gameData', 'userProfile');
+                await setDoc(userDocRef, gameState, { merge: true });
+                console.log("Game state saved to Firestore.");
+            } catch (error) {
+                console.error("Error saving game state to Firestore:", error);
+                localStorage.setItem('rpsGameState', JSON.stringify(gameState));
+                console.log("Game state saved to localStorage (Firestore save failed).");
+            }
+        }
+
+        // The loadGame function is now primarily for localStorage fallback.
+        function loadGame() {
+            const savedState = localStorage.getItem('rpsGameState');
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                playerScore = gameState.playerScore || 0;
+                computerScore = gameState.computerScore || 0;
+                playerLives = gameState.playerLives || 10;
+                playerCoins = gameState.playerCoins || 100;
+                playerXP = gameState.playerXP || 0;
+                playerRank = gameState.playerRank || 'Bronze';
+                lastBonusClaimDate = gameState.lastBonusClaimDate || 0;
+                hasSubscription = gameState.hasSubscription || false;
+
+                if (gameState.quests) {
+                    quests = quests.map(defaultQuest => {
+                        const savedQuest = gameState.quests.find(q => q.id === defaultQuest.id);
+                        return savedQuest ? { ...defaultQuest, current: savedQuest.current, isCompleted: savedQuest.isCompleted } : defaultQuest;
+                    });
+                }
+            }
+            updateDisplays();
+            updateRank();
+        }
+
+        /**
+         * Updates all game display elements (scores, lives, coins, XP, rank)
+         * including the new home screen displays.
+         */
+        function updateDisplays() {
+            playerScoreDisplay.textContent = playerScore;
+            computerScoreDisplay.textContent = computerScore;
+            playerLivesDisplay.textContent = playerLives;
+            computerLivesDisplay.textContent = computerLives; // Update computer lives display
+            playerCoinsDisplay.textContent = playerCoins;
+            playerXPDisplay.textContent = playerXP;
+            playerRankDisplay.textContent = playerRank;
+            shopCoinsDisplay.textContent = playerCoins;
+
+            // Update home screen displays
+            homeCoinsDisplay.textContent = playerCoins;
+            homeXPDisplay.textContent = playerXP;
+            homeRankDisplay.textContent = playerRank;
+
+            // Update subscription button state in shop
+            if (buySubscriptionBtn) {
+                if (hasSubscription) {
+                    buySubscriptionBtn.textContent = 'Subscription Active!';
+                    buySubscriptionBtn.disabled = true;
+                    buySubscriptionBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    buySubscriptionBtn.textContent = `Buy Premium Subscription (${SUBSCRIPTION_COST} Coins)`;
+                    buySubscriptionBtn.disabled = false;
+                    buySubscriptionBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+            // Update difficulty modal coins display
+            if (difficultyCoinsDisplay) {
+                difficultyCoinsDisplay.textContent = playerCoins;
+            }
+        }
+
+        /**
+         * Determines the player's rank based on their XP.
+         */
+        function updateRank() {
+            if (playerXP >= RANK_THRESHOLDS['Hero']) {
+                playerRank = 'Hero';
+                playerRankDisplay.classList.remove('text-green-600', 'text-gray-600', 'text-yellow-600');
+                playerRankDisplay.classList.add('text-purple-600');
+                homeRankDisplay.classList.remove('text-green-400', 'text-gray-400', 'text-yellow-400');
+                homeRankDisplay.classList.add('text-purple-400');
+            } else if (playerXP >= RANK_THRESHOLDS['Gold']) {
+                playerRank = 'Gold';
+                playerRankDisplay.classList.remove('text-green-600', 'text-gray-600', 'text-purple-600');
+                playerRankDisplay.classList.add('text-yellow-600');
+                homeRankDisplay.classList.remove('text-green-400', 'text-gray-400', 'text-purple-400');
+                homeRankDisplay.classList.add('text-yellow-400');
+            } else if (playerXP >= RANK_THRESHOLDS['Silver']) {
+                playerRank = 'Silver';
+                playerRankDisplay.classList.remove('text-green-600', 'text-yellow-600', 'text-purple-600');
+                playerRankDisplay.classList.add('text-gray-600');
+                homeRankDisplay.classList.remove('text-green-400', 'text-yellow-400', 'text-purple-400');
+                homeRankDisplay.classList.add('text-gray-400');
+            } else {
+                playerRank = 'Bronze';
+                playerRankDisplay.classList.remove('text-gray-600', 'text-yellow-600', 'text-purple-600');
+                playerRankDisplay.classList.add('text-green-600');
+                homeRankDisplay.classList.remove('text-gray-400', 'text-yellow-400', 'text-purple-400');
+                homeRankDisplay.classList.add('text-green-400');
+            }
+            updateDisplays();
+            saveGame();
+        }
+
+        /**
+         * Generates a random choice for the computer.
+         * @returns {string} - The computer's choice ('rock', 'paper', or 'scissors').
+         */
+        function getComputerChoice() {
+            const randomIndex = Math.floor(Math.random() * choices.length);
+            return choices[randomIndex];
+        }
+
+        /**
+         * Determines the winner of the round, with subscription bonus.
+         * @param {string} playerSelection - The player's choice.
+         * @param {string} computerSelection - The computer's choice.
+         * @returns {string} - The result of the round ('win', 'lose', or 'draw').
+         */
+        function determineWinner(playerSelection, computerSelection) {
+            let result = '';
+            if (playerSelection === computerSelection) {
+                result = 'draw';
+            } else if (
+                (playerSelection === 'rock' && computerSelection === 'scissors') ||
+                (playerSelection === 'paper' && computerSelection === 'rock') ||
+                (playerSelection === 'scissors' && computerSelection === 'paper')
+            ) {
+                result = 'win';
+            } else {
+                result = 'lose';
+            }
+
+            // Apply subscription "extra chance to win"
+            if (result === 'lose' && hasSubscription && !subscriptionUsedThisGame) {
+                subscriptionUsedThisGame = true;
+                resultDisplay.textContent = 'Subscription saved you from a loss! It\'s a Draw!';
+                resultDisplay.classList.remove('text-red-600', 'text-green-600', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.add('text-blue-500');
+                setTimeout(() => {
+                    if (!gameEnded) {
+                        resultDisplay.textContent = 'Choose your move!';
+                        resultDisplay.classList.remove('text-blue-500');
+                        resultDisplay.classList.add('text-gray-900');
+                    }
+                }, 3000);
+                return 'draw';
+            }
+            return result;
+        }
+
+        /**
+         * Disables or enables the game choice buttons.
+         * @param {boolean} disabled - True to disable, false to enable.
+         */
+        function disableGameButtons(disabled) {
+            rockBtn.disabled = disabled;
+            paperBtn.disabled = disabled;
+            scissorsBtn.disabled = disabled;
+            [rockBtn, paperBtn, scissorsBtn].forEach(btn => {
+                if (disabled) {
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        /**
+         * Shows a modal with a specific message.
+         * @param {HTMLElement} modalElement - The modal overlay element to show.
+         * @param {string} message - The message to display (for game message modal only).
+         * @param {string} type - 'win' or 'lose' to apply specific styling (for game message modal only).
+         */
+        function showModal(modalElement, message = '', type = '') {
+            if (modalElement === gameMessageModal) {
+                modalMessage.textContent = message;
+                if (type === 'win') {
+                    modalMessage.classList.add('text-green-600');
+                    modalMessage.classList.remove('text-red-600');
+                } else if (type === 'lose') {
+                    modalMessage.classList.add('text-red-600');
+                    modalMessage.classList.remove('text-green-600');
+                }
+            }
+            modalElement.classList.remove('hidden');
+            modalElement.classList.add('show');
+        }
+
+        /**
+         * Hides a modal.
+         * @param {HTMLElement} modalElement - The modal overlay element to hide.
+         */
+        function hideModal(modalElement) {
+            modalElement.classList.remove('show');
+            setTimeout(() => {
+                modalElement.classList.add('hidden');
+            }, 300);
+        }
+
+        /**
+         * Handles the game over condition.
+         */
+        function gameOver() {
+            gameEnded = true;
+            disableGameButtons(true);
+
+            // Apply coin penalty for losing the game
+            const penalty = DIFFICULTY_SETTINGS[currentDifficulty].gameLossPenalty;
+            playerCoins = Math.max(0, playerCoins - penalty); // Ensure coins don't go below 0
+            updateDisplays();
+            saveGame();
+
+            showModal(gameMessageModal, `You Lose the Game! Lost ${penalty} Coins!`, 'lose');
+            clearInterval(lifeRegenIntervalId);
+        }
+
+        /**
+         * Handles the game won condition.
+         */
+        function gameWon() {
+            gameEnded = true;
+            disableGameButtons(true);
+
+            // Award coins for winning the game based on difficulty
+            const winReward = DIFFICULTY_SETTINGS[currentDifficulty].winRewardCoins;
+            playerCoins += winReward;
+            updateDisplays();
+            saveGame();
+
+            showModal(gameMessageModal, `You Won the Game! Gained ${winReward} Coins!`, 'win');
+            clearInterval(lifeRegenIntervalId);
+        }
+
+        /**
+         * Starts the life regeneration interval.
+         */
+        function startLifeRegen() {
+            if (lifeRegenIntervalId) {
+                clearInterval(lifeRegenIntervalId);
+            }
+            lifeRegenIntervalId = setInterval(() => {
+                if (playerLives < 10) {
+                    playerLives++;
+                    updateDisplays();
+                    resultDisplay.textContent = 'You gained 1 life!';
+                    resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-green-600', 'text-yellow-700', 'text-blue-500');
+                    resultDisplay.classList.add('text-purple-600');
+                    setTimeout(() => {
+                        if (!gameEnded) {
+                            resultDisplay.textContent = 'Choose your move!';
+                            resultDisplay.classList.remove('text-purple-600');
+                            resultDisplay.classList.add('text-gray-900');
+                        }
+                    }, 2000);
+                    saveGame();
+                }
+            }, LIFE_REGEN_TIME_MS);
+            console.log(`Life regeneration started. Gaining 1 life every ${LIFE_REGEN_TIME_MS / 1000 / 60} minutes.`);
+        }
+
+        /**
+         * Handles buying a life from the shop.
+         */
+        function buyLife() {
+            shopMessage.textContent = '';
+            if (playerCoins >= LIFE_COST) {
+                if (playerLives < 10) {
+                    playerCoins -= LIFE_COST;
+                    playerLives++;
+                    updateDisplays();
+                    shopMessage.textContent = 'Life purchased!';
+                    shopMessage.classList.remove('text-red-500');
+                    shopMessage.classList.add('text-green-500');
+                    saveGame();
+                } else {
+                    shopMessage.textContent = 'Lives are full!';
+                    shopMessage.classList.remove('text-green-500');
+                    shopMessage.classList.add('text-red-500');
+                }
+            } else {
+                shopMessage.textContent = 'Not enough coins!';
+                shopMessage.classList.remove('text-green-500');
+                shopMessage.classList.add('text-red-500');
+            }
+        }
+
+        /**
+         * Handles buying Hero Rank from the shop.
+         */
+        function buyHeroRank() {
+            shopMessage.textContent = '';
+            if (playerCoins >= HERO_RANK_COST) {
+                if (playerRank !== 'Hero') {
+                    playerCoins -= HERO_RANK_COST;
+                    playerXP = RANK_THRESHOLDS['Hero'];
+                    updateDisplays();
+                    updateRank();
+                    shopMessage.textContent = 'Hero Rank purchased!';
+                    shopMessage.classList.remove('text-red-500');
+                    shopMessage.classList.add('text-green-500');
+                    saveGame();
+                } else {
+                    shopMessage.textContent = 'You are already Hero rank!';
+                    shopMessage.classList.remove('text-green-500');
+                    shopMessage.classList.add('text-red-500');
+                }
+            } else {
+                shopMessage.textContent = 'Not enough coins!';
+                shopMessage.classList.remove('text-green-500');
+                shopMessage.classList.add('text-red-500');
+            }
+        }
+
+        /**
+         * Handles buying the Premium Subscription from the shop.
+         */
+        function buySubscription() {
+            shopMessage.textContent = '';
+            if (playerCoins >= SUBSCRIPTION_COST) {
+                if (!hasSubscription) {
+                    playerCoins -= SUBSCRIPTION_COST;
+                    hasSubscription = true;
+                    updateDisplays();
+                    shopMessage.textContent = 'Premium Subscription activated!';
+                    shopMessage.classList.remove('text-red-500');
+                    shopMessage.classList.add('text-green-500');
+                    saveGame();
+                } else {
+                    shopMessage.textContent = 'You already have a subscription!';
+                    shopMessage.classList.remove('text-green-500');
+                    shopMessage.classList.add('text-red-500');
+                }
+            } else {
+                shopMessage.textContent = 'Not enough coins for subscription!';
+                shopMessage.classList.remove('text-green-500');
+                shopMessage.classList.add('text-red-500');
+            }
+        }
+
+        /**
+         * Handles claiming daily bonus coins.
+         */
+        function claimDailyBonus() {
+            const now = Date.now();
+            if (now - lastBonusClaimDate >= DAILY_BONUS_INTERVAL_MS) {
+                playerCoins += DAILY_BONUS_AMOUNT;
+                lastBonusClaimDate = now;
+                updateDisplays();
+                saveGame();
+                dailyBonusBtn.textContent = 'Bonus Claimed!';
+                dailyBonusBtn.disabled = true;
+                dailyBonusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                setTimeout(() => {
+                    updateDailyBonusButtonState();
+                }, 3000);
+            } else {
+                const timeLeft = DAILY_BONUS_INTERVAL_MS - (now - lastBonusClaimDate);
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                dailyBonusBtn.textContent = `Next Bonus in ${hours}h ${minutes}m`;
+                dailyBonusBtn.disabled = true;
+                dailyBonusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                setTimeout(updateDailyBonusButtonState, timeLeft + 1000);
+            }
+        }
+
+        /**
+         * Updates the state (enabled/disabled and text) of the daily bonus button.
+         */
+        function updateDailyBonusButtonState() {
+            const now = Date.now();
+            if (now - lastBonusClaimDate >= DAILY_BONUS_INTERVAL_MS) {
+                dailyBonusBtn.disabled = false;
+                dailyBonusBtn.textContent = 'Claim Daily Bonus';
+                dailyBonusBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                const timeLeft = DAILY_BONUS_INTERVAL_MS - (now - lastBonusClaimDate);
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                dailyBonusBtn.textContent = `Next Bonus in ${hours}h ${minutes}m`;
+                dailyBonusBtn.disabled = true;
+                dailyBonusBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                setTimeout(updateDailyBonusButtonState, timeLeft + 1000);
+            }
+        }
+
+        /**
+         * Updates quest progress based on game events.
+         * @param {string} type - The type of event ('winRounds', 'playRounds', 'reachRank').
+         * @param {any} value - The value associated with the event (e.g., number of wins, current XP).
+         */
+        function updateQuestProgress(type, value) {
+            quests.forEach(quest => {
+                if (!quest.isCompleted) {
+                    if (quest.type === type) {
+                        if (type === 'winRounds' || type === 'playRounds') {
+                            quest.current = value;
+                        } else if (quest.type === 'reachRank') {
+                            if (playerXP >= quest.target) {
+                                // Quest is ready to be completed
+                            }
+                        }
+                    }
+                }
+            });
+            saveGame();
+            renderQuests();
+        }
+
+        /**
+         * Renders the quests in the quests modal.
+         */
+        function renderQuests() {
+            questsList.innerHTML = '';
+            quests.forEach(quest => {
+                const questItem = document.createElement('div');
+                questItem.classList.add('quest-item');
+                if (quest.isCompleted) {
+                    questItem.classList.add('completed');
+                }
+
+                let progressText = '';
+                let canComplete = false;
+
+                if (quest.type === 'winRounds' || quest.type === 'playRounds') {
+                    progressText = `(${quest.current}/${quest.target})`;
+                    canComplete = quest.current >= quest.target && !quest.isCompleted;
+                } else if (quest.type === 'reachRank') {
+                    progressText = `(Current XP: ${playerXP}/${quest.target})`;
+                    canComplete = playerXP >= quest.target && !quest.isCompleted;
+                }
+
+                questItem.innerHTML = `
+                    <div class="quest-details">
+                        <span class="quest-description">${quest.description} ${progressText}</span>
+                        <div class="quest-reward">
+                            +${quest.xpReward} XP, +${quest.coinReward} Coins
+                        </div>
+                    </div>
+                    <button class="quest-button" data-quest-id="${quest.id}" ${canComplete ? '' : 'disabled'}>
+                        ${quest.isCompleted ? 'Completed' : 'Claim'}
+                    </button>
+                `;
+                questsList.appendChild(questItem);
+            });
+
+            questsList.querySelectorAll('.quest-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const questId = event.target.dataset.questId;
+                    const quest = quests.find(q => q.id === questId);
+                    if (quest && !quest.isCompleted && event.target.disabled === false) {
+                        playerXP += quest.xpReward;
+                        playerCoins += quest.coinReward;
+                        quest.isCompleted = true;
+                        updateDisplays();
+                        updateRank();
+                        saveGame();
+                        renderQuests();
+                        resultDisplay.textContent = `Quest Completed! +${quest.xpReward} XP, +${quest.coinReward} Coins!`;
+                        resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
+                        resultDisplay.classList.add('text-green-600');
+                        setTimeout(() => {
+                            if (!gameEnded) {
+                                resultDisplay.textContent = 'Choose your move!';
+                                resultDisplay.classList.remove('text-green-600');
+                                resultDisplay.classList.add('text-gray-900');
+                            }
+                        }, 3000);
+                    }
+                });
+            });
+        }
+
+        /**
+         * Plays a single round of Rock-Paper-Scissors.
+         * @param {string} playerSelection - The player's choice.
+         */
+        function playRound(playerSelection) {
+            if (gameEnded) {
+                return;
+            }
+
+            const computerSelection = getComputerChoice();
+
+            playerChoiceDisplay.textContent = `${playerSelection.charAt(0).toUpperCase() + playerSelection.slice(1)} ${choiceIcons[playerSelection]}`;
+            computerChoiceDisplay.textContent = `${computerSelection.charAt(0).toUpperCase() + computerSelection.slice(1)} ${choiceIcons[computerSelection]}`;
+
+            const result = determineWinner(playerSelection, computerSelection);
+
+            if (result === 'win') {
+                playerScore++;
+                playerXP += WIN_REWARD_XP;
+                computerLives--; // Computer loses a life
+                resultDisplay.textContent = 'You Win This Round!';
+                resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
+                resultDisplay.classList.add('text-green-600');
+                updateQuestProgress('winRounds', playerScore);
+            } else if (result === 'lose') {
+                computerScore++;
+                playerLives--; // Player loses a life
+                playerXP = Math.max(0, playerXP - LOSE_PENALTY_XP);
+                resultDisplay.textContent = 'You Lose This Round!';
+                resultDisplay.classList.remove('text-green-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
+                resultDisplay.classList.add('text-red-600');
+            } else { // It's a draw (either natural or due to subscription)
+                resultDisplay.textContent = resultDisplay.textContent.includes('Subscription saved') ? resultDisplay.textContent : 'It\'s a Draw! No lives, coins or XP affected.';
+                resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600');
+                resultDisplay.classList.add('text-gray-900');
+            }
+
+            updateQuestProgress('playRounds', playerScore + computerScore);
+
+            updateDisplays();
+            updateRank();
+            saveGame();
+
+            // Check game end conditions
+            if (playerLives <= 0) {
+                gameOver();
+            } else if (playerScore >= WIN_CONDITION_SCORE) {
+                gameWon();
+            } else if (computerLives <= 0) { // New: If computer runs out of lives, player wins
+                gameWon(); // Treat as player win
+            }
+        }
+
+        /**
+         * Resets the game scores, lives, coins, XP, rank and displays.
+         * @param {boolean} fullReset - If true, resets all game data including bonus date and quests.
+         * If false, it's a soft reset for new game session (e.g., after login).
+         */
+        function resetGame(fullReset = true) {
+            playerScore = 0;
+            computerScore = 0;
+            playerLives = 10; // Player lives always reset to 10
+            playerXP = 0;
+
+            gameEnded = false;
+            subscriptionUsedThisGame = false;
+            currentDifficulty = null; // Clear difficulty
+
+            if (fullReset) {
+                playerCoins = 100;
+                lastBonusClaimDate = 0;
+                hasSubscription = false;
+                quests.forEach(quest => {
+                    quest.isCompleted = false;
+                    quest.current = 0;
+                });
+            }
+
+            updateDisplays();
+            updateRank();
+
+            resultDisplay.textContent = 'Choose your move!';
+            resultDisplay.classList.remove('text-green-600', 'text-red-600', 'text-yellow-700', 'text-purple-600', 'text-blue-500');
+            resultDisplay.classList.add('text-gray-900');
+            playerChoiceDisplay.textContent = '';
+            computerChoiceDisplay.textContent = '';
+            shopMessage.textContent = '';
+            difficultyMessage.textContent = '';
+
+            hideModal(gameMessageModal);
+            hideModal(instructionsModal);
+            hideModal(shopModal);
+            hideModal(questsModal);
+            hideModal(difficultyModal);
+            disableGameButtons(true);
+            clearInterval(lifeRegenIntervalId);
+            saveGame();
+        }
+
+        /**
+         * Initializes the game by showing the start screen.
+         * This is called when the page loads or when returning from game over/win.
+         */
+        async function initializeGame() {
+            await initializeFirebase();
+            startScreen.style.display = 'flex';
+            gameScreen.style.display = 'none';
+            clearInterval(lifeRegenIntervalId);
+            gameEnded = false;
+            disableGameButtons(true);
+            updateDisplays();
+            updateRank();
+            updateDailyBonusButtonState();
+        }
+
+        // Event Listeners for start screen buttons
+        startGameBtn.addEventListener('click', () => {
+            showModal(difficultyModal);
+            difficultyCoinsDisplay.textContent = playerCoins;
+            difficultyMessage.textContent = '';
+            easyBtn.disabled = playerCoins < DIFFICULTY_SETTINGS['easy'].entryCost;
+            mediumBtn.disabled = playerCoins < DIFFICULTY_SETTINGS['medium'].entryCost;
+            hardBtn.disabled = playerCoins < DIFFICULTY_SETTINGS['hard'].entryCost;
+        });
+
+        // Event listeners for difficulty buttons
+        document.querySelectorAll('.difficulty-button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const difficulty = event.target.dataset.difficulty;
+                const cost = DIFFICULTY_SETTINGS[difficulty].entryCost;
+
+                if (playerCoins >= cost) {
+                    playerCoins -= cost;
+                    currentDifficulty = difficulty;
+                    playerScore = 0; // Reset player score for new game
+                    computerScore = 0; // Reset computer score for new game
+                    playerLives = 10; // Player lives always start at 10
+                    computerLives = DIFFICULTY_SETTINGS[difficulty].computerLives; // Set computer lives based on difficulty
+
+                    updateDisplays();
+                    saveGame();
+
+                    hideModal(difficultyModal);
+                    startScreen.style.display = 'none';
+                    gameScreen.style.display = 'flex';
+                    gameEnded = false;
+                    subscriptionUsedThisGame = false;
+                    disableGameButtons(false);
+                    startLifeRegen();
+                    resultDisplay.textContent = `Game started on ${difficulty.toUpperCase()} difficulty!`;
+                    resultDisplay.classList.remove('text-red-600', 'text-gray-900', 'text-yellow-700', 'text-purple-600', 'text-blue-500', 'text-green-600');
+                    resultDisplay.classList.add('text-gray-900');
+                    playerChoiceDisplay.textContent = '';
+                    computerChoiceDisplay.textContent = '';
+                } else {
+                    difficultyMessage.textContent = 'Not enough coins for this difficulty!';
+                }
+            });
+        });
+
+        closeDifficultyBtn.addEventListener('click', () => {
+            hideModal(difficultyModal);
+        });
+
+
+        instructionsBtn.addEventListener('click', () => {
+            showModal(instructionsModal);
+        });
+
+        closeInstructionsBtn.addEventListener('click', () => {
+            hideModal(instructionsModal);
+        });
+
+        // Event Listeners for game choice buttons
+        rockBtn.addEventListener('click', () => playRound('rock'));
+        paperBtn.addEventListener('click', () => playRound('paper'));
+        scissorsBtn.addEventListener('click', () => playRound('scissors'));
+
+        // Event Listener for "Shop" button on the game screen
+        shopBtnGameScreen.addEventListener('click', () => {
+            showModal(shopModal);
+            shopMessage.textContent = '';
+            updateDisplays();
+        });
+
+        // Event Listener for "Shop" button on the start screen
+        shopBtnStartScreen.addEventListener('click', () => {
+            showModal(shopModal);
+            shopMessage.textContent = '';
+            updateDisplays();
+        });
+
+        // Event Listener for "Daily Bonus" button on the start screen
+        dailyBonusBtn.addEventListener('click', claimDailyBonus);
+
+        // Event Listener for "Sign In with Google" button
+        googleSignInBtn.addEventListener('click', signInWithGoogle);
+
+        // Event Listener for "Buy Life" button in shop
+        buyLifeBtn.addEventListener('click', buyLife);
+
+        // Event Listener for "Buy Hero Rank" button in shop
+        buyHeroRankBtn.addEventListener('click', buyHeroRank);
+
+        // Event Listener for "Buy Subscription" button in shop
+        buySubscriptionBtn.addEventListener('click', buySubscription);
+
+        // Event Listener for "Close Shop" button
+        closeShopBtn.addEventListener('click', () => {
+            hideModal(shopModal);
+        });
+
+        // Event Listener for "Quests" button
+        questsBtn.addEventListener('click', () => {
+            renderQuests();
+            showModal(questsModal);
+        });
+
+        // Event Listener for "Close Quests" button
+        closeQuestsBtn.addEventListener('click', () => {
+            hideModal(questsModal);
+        });
+
+        // Event Listener for "Return to Home" button in the game over/win modal
+        playAgainBtn.addEventListener('click', () => {
+            hideModal(gameMessageModal);
+            initializeGame();
+        });
+
+        // Initialize the game on window load
+        window.onload = initializeGame;
+    </script>
+</body>
+</html>
