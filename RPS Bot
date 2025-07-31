@@ -1,1 +1,109 @@
-Updating....
+Difficulty-Based Lives:
+
+Player Lives: You will always start with 10 lives, regardless of difficulty.
+
+Computer Lives:
+
+Easy: Computer starts with 5 lives.
+
+Medium: Computer starts with 10 lives.
+
+Hard: Computer starts with 15 lives.
+
+This makes the game progressively harder as the computer has more chances to win rounds against you.
+
+No Per-Round Coin Rewards/Losses:
+
+Winning a Round: You will not receive coins for winning individual rounds.
+
+Losing a Round: You will not lose coins for losing individual rounds (only lives and XP are affected).
+
+Ties: As before, ties have no coin, life, or XP impact.
+
+Match Win Coin Rewards:
+
+Coins are now awarded only when you win the entire match (reach 10 player wins). The reward depends on the chosen difficulty:
+
+Easy: You win 200 coins.
+
+Medium: You win 300 coins.
+
+Hard: You win 400 coins.
+
+Game Loss Coin Penalties:
+
+The coin penalty for losing the entire game (running out of lives) remains in effect, based on the difficulty chosen at the start.
+
+Updated Instructions: The "How to Play" instructions have been fully revised to clearly explain these new coin and life mechanics.
+
+Here's the updated code:
+
+
+
+
+
+uPDATE THR GAME AND GIVE PATVH NOTES SEPRATELY KINDLY AND MAKE GAME good bu updating him
+
+
+
+Show thinking
+Here's an updated version of your Rock-Paper-Scissors game, along with detailed patch notes outlining all the recent changes. I've focused on making the game mechanics clearer and providing better visual feedback, especially regarding computer lives.
+
+Patch Notes
+Here's a summary of the recent updates to the Rock-Paper-Scissors game:
+
+Game Mechanics & Difficulty:
+
+Difficulty-Based Computer Lives:
+
+Easy: Computer starts with 5 lives.
+
+Medium: Computer starts with 10 lives.
+
+Hard: Computer starts with 15 lives.
+
+Player lives remain fixed at 10 across all difficulties.
+
+Revised Coin Economy:
+
+No Per-Round Coin Changes: Winning or losing individual rounds no longer affects your coin balance.
+
+Match Entry Fee: A one-time coin cost is paid when you start a new game based on your chosen difficulty (Easy: 100, Medium: 200, Hard: 300).
+
+Match Win Rewards: Coins are now awarded only when you win the entire match (reaching 10 player wins):
+
+Easy: +200 coins
+
+Medium: +300 coins
+
+Hard: +400 coins
+
+Game Loss Penalties: If you lose the entire game (run out of player lives), you incur a coin penalty based on difficulty:
+
+Easy: -50 coins
+
+Medium: -100 coins
+
+Hard: -150 coins
+
+Subscription "Extra Chance": The Premium Subscription still grants one "extra chance" per game session, turning a loss into a draw. This feature remains unchanged.
+
+User Interface & Experience:
+
+Computer Lives Displayed: A new "Computer Lives" display has been added to the main game screen, making it clear how many lives the computer has based on the chosen difficulty.
+
+Instructions Modal Fix: The "Instructions" modal now correctly includes a "Got It!" button at the bottom, allowing you to close it easily. The modal content is also scrollable to ensure all instructions are visible regardless of screen size.
+
+Clearer Round Result Messages: Messages in the resultDisplay are now more explicit about the outcome of each round, especially for draws and when the subscription saves you.
+
+"Reset Game" Button Removed: The "Reset Game" button has been removed from the main game screen, as the game now naturally concludes by returning to the home screen upon win or loss.
+
+Improved Modal Responsiveness: Modal content is now set to max-height: 90vh and overflow-y: auto to ensure they are scrollable on smaller screens or when content is extensive.
+
+Behind the Scenes:
+
+Firebase Integration: Game state (coins, XP, rank, quests, subscription, daily bonus data) is persistently saved and loaded using Firebase Firestore when you sign in with Google. Anonymous users' data is saved to local storage.
+
+Quest Progress Tracking: Quests continue to track your progress and allow you to claim rewards once completed.
+
+Daily Bonus: The daily bonus system is still in place, allowing you to claim 100 coins once every 24 hours.
